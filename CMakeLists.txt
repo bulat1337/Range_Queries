@@ -95,7 +95,8 @@ add_library(range_queries STATIC
 	src/range_queries.cpp)
 
 target_include_directories(range_queries PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/include)
+	${CMAKE_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/RB_Tree/include)
 
 if(ENABLE_LOGGING)
 	target_compile_definitions(range_queries PRIVATE ENABLE_LOGGING)
@@ -116,7 +117,8 @@ endif()
 
 add_executable(range_queries.x ./main.cpp)
 target_include_directories(range_queries.x PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/include)
+	${CMAKE_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/RB_Tree/include)
 
 if(ENABLE_LOGGING)
 	target_compile_definitions(range_queries.x PRIVATE ENABLE_LOGGING)
