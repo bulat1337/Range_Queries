@@ -7,6 +7,8 @@
 #include <fstream>
 #include <string>
 
+#include "log.h"
+
 template <typename T>
 class RB_Tree
 {
@@ -27,6 +29,43 @@ class RB_Tree
 
 		Node(const T& value, Node* parent):
 			value(value), parent(parent) {}
+
+		Node* get_grandp()
+		{
+			if (parent != nullptr) return parent->parent;
+
+			return nullptr;
+		}
+
+		Node* get_unc()
+		{
+			Node* grandparent = get_grandp();
+
+			if (grandparent == nullptr) return nullptr;
+
+			return grandparent->right == parent ? grandparent->left : grandparent->right;
+		}
+
+		bool is_left_child()
+		{
+			return parent->left == this;
+		}
+
+		bool is_right_child()
+		{
+			return !is_left_child();
+		}
+
+		bool is_triangle()
+		{
+			return     (is_left_child()  && parent->is_right_child())
+					|| (is_right_child() && parent->is_left_child());
+		}
+
+		Node* get_bro()
+		{
+			return is_left_child() ? parent->right : parent->left;
+		}
 	};
 
   private:
@@ -97,7 +136,7 @@ class RB_Tree
 
 				data_.push_back(inserted_node);
 
-				fix_invariant(inserted_node);
+				fix_violation(inserted_node);
 
 				return;
 			}
@@ -114,7 +153,7 @@ class RB_Tree
 
 				data_.push_back(inserted_node);
 
-				fix_invariant(inserted_node);
+				fix_violation(inserted_node);
 
 				return;
 			}
@@ -125,9 +164,62 @@ class RB_Tree
 		return;
 	}
 
-	void fix_invariant(Node* inserted_node)
+	void handle_black_unc(Node* inserted_node)
 	{
+		Node* parent = inserted_node->parent;
 
+		if (inserted_node->is_triangle())
+		{
+			MSG("Node formes triangle\n");
+			if (inserted_node->is_left_child()) rotate_right(parent);
+			else rotate_left(parent);
+		}
+
+		if (inserted_node->is_left_child()) rotate_right(parent->parent);
+		else rotate_left(parent->parent);
+
+		paint_black(parent);
+		paint_red(inserted_node->get_bro());
+	}
+
+	void fix_violation(Node* inserted_node)
+	{
+		MSG("Fixing the violation\n");
+
+		Node* parent = inserted_node->parent;
+
+		if (!parent->is_red) return;
+
+		Node* uncle  = inserted_node->get_unc();
+
+		if (uncle == nullptr)
+		{
+			handle_black_unc(inserted_node);
+			return;
+		}
+
+		if (uncle->is_red)
+		{
+			MSG("Uncle is red\n");
+
+			paint_black(parent);
+			paint_black(uncle);
+			paint_red(inserted_node->get_grandp());
+
+			return;
+		}
+
+		handle_black_unc(inserted_node);
+	}
+
+	void paint_black(Node* node)
+	{
+		if (node != nullptr) node->is_red = false;
+	}
+
+	void paint_red(Node* node)
+	{
+		node->is_red = true;
 	}
 
   private:
@@ -138,7 +230,7 @@ class RB_Tree
 		dump 	<< "\t"
 				<< reinterpret_cast<size_t>(node)
 				<< "[shape = Mrecord, fillcolor = \""
-				<< (node->is_red ? black_ : red_)
+				<< (node->is_red ? red_ : black_)
 				<< "\", label =  \"{"
 				<< node << " | val: " << node->value
 				<< " | {L: " << node->left
@@ -183,11 +275,13 @@ class RB_Tree
   public:
 	void insert(const T& value)
 	{
+		LOG("Inserting {}\n", value);
+
 		if (root_ == nullptr)
 		{
 			root_ = new Node(value);
 			data_.push_back(root_);
-			root_->is_red = false;
+			paint_black(root_);
 		}
 		else
 			subtree_insert(root_, value);
