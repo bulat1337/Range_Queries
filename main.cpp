@@ -23,7 +23,16 @@ int main()
 	tree.insert(58);
 	tree.insert(35);
 
-	tree.dump_tree();
+	RB_Tree<int> tree_2;
+
+	tree_2.insert(666);
+	tree_2.insert(777);
+	tree_2.insert(111);
+	tree_2.insert(333);
+
+	tree_2 = std::move(tree);
+
+	tree_2.dump_tree();
 
 	return 0;
 }

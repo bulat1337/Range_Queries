@@ -27,8 +27,8 @@ class RB_Tree
 		Node(const T& value):
 			value(value) {}
 
-		Node(const T& value, Node* parent):
-			value(value), parent(parent) {}
+		Node(const T& value, Node* parent, bool is_red = true):
+			value(value), parent(parent), is_red(is_red) {}
 
 		Node* get_grandp()
 		{
@@ -58,7 +58,7 @@ class RB_Tree
 
 		bool is_triangle()
 		{
-			return	 (is_left_child()  && parent->is_right_child())
+			return	   (is_left_child()  && parent->is_right_child())
 					|| (is_right_child() && parent->is_left_child());
 		}
 
@@ -108,7 +108,7 @@ class RB_Tree
 		Node* pivot = node->left;
 
 		pivot->parent = node->parent;
-		if (node->parent != NULL)
+		if (node->parent != nullptr)
 		{
 			if (node->parent->left == node)
 				node->parent->left  = pivot;
@@ -118,7 +118,7 @@ class RB_Tree
 		else root_ = pivot;
 
 		node->left = pivot->right;
-		if (pivot->right != NULL)
+		if (pivot->right != nullptr)
 			pivot->right->parent = node;
 
 		node->parent = pivot;
@@ -132,9 +132,9 @@ class RB_Tree
 			if (sub_root->right == nullptr)
 			{
 				Node* inserted_node = new Node(value, sub_root);
-				sub_root->right = inserted_node;
+				sub_root->right     = inserted_node;
 
-				data_.push_back(inserted_node);
+				data_.emplace_back(inserted_node);
 
 				fix_violation(inserted_node);
 
@@ -148,9 +148,9 @@ class RB_Tree
 			if (sub_root->left  == nullptr)
 			{
 				Node* inserted_node = new Node(value, sub_root);
-				sub_root->left = inserted_node;
+				sub_root->left      = inserted_node;
 
-				data_.push_back(inserted_node);
+				data_.emplace_back(inserted_node);
 
 				fix_violation(inserted_node);
 
@@ -258,7 +258,7 @@ class RB_Tree
 			dump_connections(node->left, dump);
 		}
 
-		if(node->right != NULL)
+		if(node->right != nullptr)
 		{
 			dump 	<< reinterpret_cast<size_t>(node)
 					<< " -> "
@@ -275,7 +275,82 @@ class RB_Tree
 		std::system(cmd.c_str());
 	}
 
+  private:
+	void free_data()
+	{
+		for (auto& elem : data_)
+		{
+			LOG("Deleting {}\n", elem->value);
+			delete elem;
+		}
+
+		root_ = nullptr;
+		data_.clear();
+	}
+
+	Node* create_based_on(const Node* reference, Node* parent)
+	{
+		if (reference == nullptr) return nullptr;
+
+		LOG("Copying {}\n", reference->value);
+		Node* created = new Node(reference->value, parent, reference->is_red);
+		data_.push_back(created);
+
+		created->left  = create_based_on(reference->left,  created);
+		created->right = create_based_on(reference->right, created);
+
+		return created;
+	}
+
   public:
+	RB_Tree() = default;
+
+	RB_Tree(const RB_Tree& other)
+	{
+		MSG("Copy constructor called\n");
+
+		root_ = create_based_on(other.root_, nullptr);
+	}
+
+	RB_Tree& operator = (const RB_Tree& other)
+	{
+		MSG("Copy assignment called\n");
+
+		if (this == &other) return *this;
+
+		free_data();
+
+		root_ = create_based_on(other.root_, nullptr);
+
+		return *this;
+	}
+
+	RB_Tree(RB_Tree&& other) noexcept :
+		  root_(std::move(other.root_))
+		, data_(std::move(other.data_))
+	{
+		MSG("Move constructor called\n");
+		other.data_.clear();
+		other.root_ = nullptr;
+	}
+
+	RB_Tree& operator = (RB_Tree&& other) noexcept
+	{
+		MSG("Move assignment called\n");
+
+		if (this == &other) return *this;
+
+		free_data();
+
+		root_ = std::move(other.root_);
+		data_ = std::move(other.data_);
+
+		other.data_.clear();
+		other.root_ = nullptr;
+
+		return *this;
+	}
+
 	void insert(const T& value)
 	{
 		LOG("Inserting {}\n", value);
@@ -317,6 +392,13 @@ class RB_Tree
 		dump << "}";
 
 		compile_dot(file_name);
+	}
+
+	~RB_Tree()
+	{
+		MSG("Destructor called\n");
+
+		free_data();
 	}
 
 };
