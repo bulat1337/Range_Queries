@@ -14,6 +14,14 @@ int main()
 	tree.insert(13);
 	tree.insert(23);
 	tree.insert(10);
+	tree.insert(11);
+	tree.insert(61);
+	tree.insert(31);
+	tree.insert(46);
+	tree.insert(43);
+	tree.insert(5);
+	tree.insert(58);
+	tree.insert(35);
 
 	tree.dump_tree();
 

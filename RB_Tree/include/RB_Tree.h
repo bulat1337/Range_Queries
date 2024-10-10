@@ -58,7 +58,7 @@ class RB_Tree
 
 		bool is_triangle()
 		{
-			return     (is_left_child()  && parent->is_right_child())
+			return	 (is_left_child()  && parent->is_right_child())
 					|| (is_right_child() && parent->is_left_child());
 		}
 
@@ -76,7 +76,7 @@ class RB_Tree
 	static constexpr const char* blue_gray_   = "#48565D";
 	static constexpr const char* coral_pink_  = "#F08080";
 	static constexpr const char* navy_blue_   = "#0B0042";
-	static constexpr const char* black_       = "#1B1B1C";
+	static constexpr const char* black_	      = "#1B1B1C";
 	static constexpr const char* red_         = "#820007";
 
   private:
@@ -142,7 +142,6 @@ class RB_Tree
 			}
 
 			subtree_insert(sub_root->right, value);
-
 		}
 		else
 		{
@@ -164,52 +163,56 @@ class RB_Tree
 		return;
 	}
 
-	void handle_black_unc(Node* inserted_node)
+	void handle_black_unc(Node* cur_node)
 	{
-		Node* parent = inserted_node->parent;
+		Node* parent      = cur_node->parent;
+		Node* grandparent = cur_node->get_grandp();
 
-		if (inserted_node->is_triangle())
+		if (cur_node->is_left_child() && parent->is_right_child())
 		{
-			MSG("Node formes triangle\n");
-			if (inserted_node->is_left_child()) rotate_right(parent);
-			else rotate_left(parent);
+			rotate_right(parent);
+			cur_node = cur_node->right;
+		}
+		else if (cur_node->is_right_child() && parent->is_left_child())
+		{
+			rotate_left(parent);
+			cur_node = cur_node->left;
 		}
 
-		if (inserted_node->is_left_child()) rotate_right(parent->parent);
-		else rotate_left(parent->parent);
+		parent = cur_node->parent;
+		grandparent = cur_node->get_grandp();
+
+		if (cur_node->is_left_child()) rotate_right(grandparent);
+		else rotate_left(grandparent);
 
 		paint_black(parent);
-		paint_red(inserted_node->get_bro());
+		paint_red(grandparent);
 	}
 
-	void fix_violation(Node* inserted_node)
+	void fix_violation(Node* cur_node)
 	{
-		MSG("Fixing the violation\n");
-
-		Node* parent = inserted_node->parent;
-
-		if (!parent->is_red) return;
-
-		Node* uncle  = inserted_node->get_unc();
-
-		if (uncle == nullptr)
+		while (cur_node != root_ && cur_node->parent->is_red)
 		{
-			handle_black_unc(inserted_node);
-			return;
+			Node* parent = cur_node->parent;
+			Node* uncle  = cur_node->get_unc();
+
+			if (uncle && uncle->is_red)
+			{
+				paint_black(parent);
+				paint_black(uncle);
+
+				Node* grandparent = cur_node->get_grandp();
+
+				paint_red(grandparent);
+				cur_node = grandparent;
+			}
+			else
+			{
+				handle_black_unc(cur_node);
+				break;
+			}
 		}
-
-		if (uncle->is_red)
-		{
-			MSG("Uncle is red\n");
-
-			paint_black(parent);
-			paint_black(uncle);
-			paint_red(inserted_node->get_grandp());
-
-			return;
-		}
-
-		handle_black_unc(inserted_node);
+		paint_black(root_);
 	}
 
 	void paint_black(Node* node)
