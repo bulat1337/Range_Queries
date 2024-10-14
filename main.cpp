@@ -34,5 +34,13 @@ int main()
 
 	tree_2.dump_tree();
 
+	int key = 0;
+	std::cin >> key;
+	RB_Tree<int>::iterator lb = tree_2.lower_bound(key);
+	RB_Tree<int>::iterator ub = tree_2.upper_bound(key);
+
+	std::cout << "lower_bound of " << key << " is " << lb->value << '\n';
+	std::cout << "upper_bound of " << key << " is " << ub->value << '\n';
+
 	return 0;
 }

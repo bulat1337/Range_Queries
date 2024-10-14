@@ -9,13 +9,13 @@
 
 #include "log.h"
 
-template <typename T>
+template <typename KeyT>
 class RB_Tree
 {
   private:
 	struct Node
 	{
-		T value;
+		KeyT value;
 
 		Node* right  = nullptr;
 		Node* left   = nullptr;
@@ -24,10 +24,10 @@ class RB_Tree
 
 		bool is_red  = true;
 
-		Node(const T& value):
+		Node(const KeyT& value):
 			value(value) {}
 
-		Node(const T& value, Node* parent, bool is_red = true):
+		Node(const KeyT& value, Node* parent, bool is_red = true):
 			value(value), parent(parent), is_red(is_red) {}
 
 		Node* get_grandp()
@@ -125,7 +125,7 @@ class RB_Tree
 		pivot->right = node;
 	}
 
-	void subtree_insert(Node* sub_root, const T& value)
+	void subtree_insert(Node* sub_root, const KeyT& value)
 	{
 		if (value >= sub_root->value)
 		{
@@ -303,6 +303,8 @@ class RB_Tree
 	}
 
   public:
+	using iterator = Node*;
+
 	RB_Tree() = default;
 
 	RB_Tree(const RB_Tree& other)
@@ -351,7 +353,7 @@ class RB_Tree
 		return *this;
 	}
 
-	void insert(const T& value)
+	void insert(const KeyT& value)
 	{
 		LOG("Inserting {}\n", value);
 
@@ -393,6 +395,74 @@ class RB_Tree
 
 		compile_dot(file_name);
 	}
+
+	iterator lower_bound(const KeyT& key) const
+	{
+		iterator cur_node = root_;
+		iterator answer = nullptr;
+
+		while (true)
+		{
+			if (key < cur_node->value)
+			{
+				answer = cur_node;
+				if (cur_node->left == nullptr) return answer;
+				cur_node = cur_node->left;
+			}
+			else if (key > cur_node->value)
+			{
+				if (cur_node->right == nullptr) return answer;
+				cur_node = cur_node->right;
+			}
+			else return cur_node;
+
+		}
+
+		return answer;
+	}
+
+	iterator upper_bound(const KeyT& key) const
+	{
+		iterator cur_node = root_;
+		iterator answer = nullptr;
+
+		while (true)
+		{
+			if (key < cur_node->value)
+			{
+				answer = cur_node;
+				if (cur_node->left == nullptr) return answer;
+				cur_node = cur_node->left;
+			}
+			else if (key >= cur_node->value)
+			{
+				if (cur_node->right == nullptr) return answer;
+				cur_node = cur_node->right;
+			}
+		}
+
+		return answer;
+	}
+
+// 	iterator upper_bound(const KeyT& key) const
+// 	{
+// 		iterator cur_node = root_;
+//
+// 		while (true)
+// 		{
+// 			if (cur_node->value < key)
+// 			{
+// 				cur_node = cur_node->left;
+// 				if (cur_node == nullptr) return nullptr;
+// 			}
+// 			else if (cur_node->value > key)
+// 			{
+// 				cur_node = cur_node->right;
+// 				if (cur_node == nullptr) return cur_node->parent;
+// 			}
+// 			else    return cur_node;
+// 		}
+// 	}
 
 	~RB_Tree()
 	{
