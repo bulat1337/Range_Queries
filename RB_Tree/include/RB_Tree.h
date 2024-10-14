@@ -127,7 +127,7 @@ class RB_Tree
 
 	void subtree_insert(Node* sub_root, const KeyT& value)
 	{
-		if (value >= sub_root->value)
+		if (value > sub_root->value)
 		{
 			if (sub_root->right == nullptr)
 			{
@@ -143,7 +143,7 @@ class RB_Tree
 
 			subtree_insert(sub_root->right, value);
 		}
-		else
+		else if (value < sub_root->value)
 		{
 			if (sub_root->left  == nullptr)
 			{
@@ -444,25 +444,53 @@ class RB_Tree
 		return answer;
 	}
 
-// 	iterator upper_bound(const KeyT& key) const
-// 	{
-// 		iterator cur_node = root_;
-//
-// 		while (true)
-// 		{
-// 			if (cur_node->value < key)
-// 			{
-// 				cur_node = cur_node->left;
-// 				if (cur_node == nullptr) return nullptr;
-// 			}
-// 			else if (cur_node->value > key)
-// 			{
-// 				cur_node = cur_node->right;
-// 				if (cur_node == nullptr) return cur_node->parent;
-// 			}
-// 			else    return cur_node;
-// 		}
-// 	}
+	size_t distance(iterator fst, iterator snd)
+	{
+		size_t distance = 0;
+
+		Node* cur_node     = fst;
+		Node* last_visited = fst->left;
+
+		while (cur_node != nullptr)
+		{
+			if (last_visited == cur_node->parent)
+			{
+				if (cur_node->left != nullptr)
+				{
+					last_visited = cur_node;
+					cur_node = cur_node->left;
+					continue;
+				}
+				else last_visited = nullptr;
+			}
+
+			if (last_visited == cur_node->left)
+			{
+				if (cur_node == snd) break;
+
+				++distance;
+
+				LOG("Counting {}\n", cur_node->value);
+
+
+				if (cur_node->right != nullptr)
+				{
+					last_visited = cur_node;
+					cur_node     = cur_node->right;
+					continue;
+				}
+				else last_visited = nullptr;
+			}
+
+			if (last_visited == cur_node->right)
+			{
+				last_visited = cur_node;
+				cur_node = cur_node->parent;
+			}
+		}
+
+		return distance;
+	}
 
 	~RB_Tree()
 	{
