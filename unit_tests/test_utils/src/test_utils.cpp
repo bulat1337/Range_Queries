@@ -1,12 +1,14 @@
 #include "test_utils.h"
 
-#include "range_queries.h"
+#include <gtest/gtest.h>    // for Message, CmpHelperEQ, CmpHelperEQFailure
+#include <filesystem>       // for path, operator/
+#include <format>           // for format
+#include <fstream>          // for basic_ifstream, ifstream
+#include <iterator>         // for istreambuf_iterator
+#include <sstream>          // for basic_stringstream, stringstream
+#include <stdexcept>        // for runtime_error
 
-#include <gtest/gtest.h>
-#include <filesystem>
-#include <fstream>
-#include <format>
-#include <sstream>
+#include "range_queries.h"  // for start
 
 void test_utils::run_test(const std::string& test_name)
 {

@@ -1,4 +1,6 @@
-#include "range_queries.h"
+#include <iostream>         // for cin, cout
+
+#include "range_queries.h"  // for start
 
 int main()
 {

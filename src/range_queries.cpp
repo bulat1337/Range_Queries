@@ -1,7 +1,9 @@
 #include "range_queries.h"
-#include "rb_tree.h"
 
-#include <iostream>
+#include <stddef.h>   // for size_t
+#include <iostream>   // for char_traits, basic_istream, basic_ostream, oper...
+
+#include "rb_tree.h"  // for RB_Tree
 
 void range_queries::start(std::istream& in, std::ostream& out)
 {

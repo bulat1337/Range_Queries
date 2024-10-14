@@ -1,7 +1,8 @@
 #ifndef TEST_UTILS_H
 #define TEST_UTILS_H
 
-#include <string>
+#include <string>       // for string
+#include <string_view>  // for string_view
 
 namespace test_utils
 {
