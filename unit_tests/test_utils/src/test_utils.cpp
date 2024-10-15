@@ -2,13 +2,12 @@
 
 #include <gtest/gtest.h>    // for Message, CmpHelperEQ, CmpHelperEQFailure
 #include <filesystem>       // for path, operator/
-#include <format>           // for format
 #include <fstream>          // for basic_ifstream, ifstream
 #include <iterator>         // for istreambuf_iterator
 #include <sstream>          // for basic_stringstream, stringstream
-#include <stdexcept>        // for runtime_error
 
 #include "range_queries.h"  // for start
+#include "log.h"            // for LOG
 
 void test_utils::run_test(const std::string& test_name)
 {
@@ -34,7 +33,10 @@ std::string test_utils::get_result(std::string_view file_name)
 	test_data.open(file_name);
 
 	if (!test_data.is_open())
-		throw std::runtime_error(std::format("Can't open {}\n", file_name));
+	{
+		LOG("Can't open {}\n", file_name);
+		throw;
+	}
 
 	std::stringstream result;
 
@@ -50,7 +52,10 @@ std::string test_utils::get_answer(std::string_view file_name)
 	answer_file.open(file_name);
 
 	if (!answer_file.is_open())
-		throw std::runtime_error(std::format("Can't open {}\n", file_name));
+	{
+		LOG("Can't open {}\n", file_name);
+		throw;
+	}
 
 	std::string answer((std::istreambuf_iterator<char>(answer_file)),
                         std::istreambuf_iterator<char>());
