@@ -3,14 +3,30 @@
 
 #include <string>       // for string
 #include <string_view>  // for string_view
+#include <fstream>
+#include <iostream>
+
+#include "log.h"
+#include "range_queries.h"
+#include "test_utils_detail.h"
 
 namespace test_utils
 {
-	void run_test(const std::string& test_name);
 
-	std::string get_result(std::string_view file_name);
+template <typename T>
+void run_test(const std::string& test_name)
+{
+	std::string test_folder = "data";
 
-	std::string get_answer(std::string_view file_name);
+    std::string test_path =
+        std::string(TEST_DATA_DIR) + test_folder + test_name;
+
+    std::string result = detail::get_result<T>(test_path + ".dat");
+    std::string answer = detail::get_answer(test_path + ".ans");
+
+    EXPECT_EQ(result, answer);
+}
+
 }
 
 #endif

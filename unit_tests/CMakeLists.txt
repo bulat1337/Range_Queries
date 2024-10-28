@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.14)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(TEST_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/")
+add_definitions(-DTEST_DATA_DIR=\"${TEST_DATA_DIR}\")
+
 find_package(GTest REQUIRED)
 
 set(COMPILE_OPTIONS
@@ -11,7 +14,6 @@ set(COMPILE_OPTIONS
 	-O0
 	-Wall
 	-Wextra
-	-Weffc++
 	-Wc++14-compat
 	-Wmissing-declarations
 	-Wcast-align
@@ -54,34 +56,35 @@ set(COMPILE_OPTIONS
 	-fPIE
 	-Werror=vla
 	-Wno-pre-c++17-compat
+	-Wno-pre-c++20-compat
 	-fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 )
 
-add_executable(tests
-	tests.cpp
+add_executable(unit_tests
+	src/unit_tests.cpp
 	main.cpp
 )
 
-target_compile_options(tests PRIVATE ${COMPILE_OPTIONS})
-target_link_options(tests PRIVATE
+target_compile_options(unit_tests PRIVATE ${COMPILE_OPTIONS})
+target_link_options(unit_tests PRIVATE
 	-fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 )
 
-target_link_libraries(tests
-	test_utils
+target_link_libraries(unit_tests
 	GTest::GTest
 	GTest::Main
 )
 
-target_include_directories(tests PRIVATE
+target_include_directories(unit_tests PRIVATE
 	${CMAKE_SOURCE_DIR}/unit_tests/test_utils/include
 	${CMAKE_SOURCE_DIR}/include
 	${CMAKE_SOURCE_DIR}/utils/include
+	${CMAKE_SOURCE_DIR}/RB_Tree/include
 )
 
 if(ENABLE_BD_TESTS)
-    target_compile_definitions(tests PRIVATE BD_TESTS)
+    target_compile_definitions(unit_tests PRIVATE BD_TESTS)
 endif()
 
 enable_testing()
-add_test(NAME Tests COMMAND tests)
+add_test(NAME UnitTests COMMAND unit_tests)

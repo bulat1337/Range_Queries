@@ -4,7 +4,7 @@
 
 int main()
 {
-	range_queries::start(std::cin, std::cout);
+	range_queries::start<int>(std::cin, std::cout);
 
 	return 0;
 }

@@ -6,12 +6,12 @@
 
 TEST(range_queries, basic_1)
 {
-	test_utils::run_test("range_queries/basic_1");
+	test_utils::run_test<int>("/common/basic_1");
 }
 
 TEST(range_queries, basic_2)
 {
-	test_utils::run_test("range_queries/basic_2");
+	test_utils::run_test<int>("/common/basic_2");
 }
 
 #ifdef BD_TESTS
