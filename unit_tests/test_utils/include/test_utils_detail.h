@@ -1,6 +1,9 @@
 #ifndef TEST_UTILS_DETAIL
 #define TEST_UTILS_DETAIL
 
+#include "range_queries.h"
+#include "rb_tree.h"
+
 namespace test_utils
 {
 
