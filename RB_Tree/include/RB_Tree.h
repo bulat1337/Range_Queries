@@ -24,11 +24,11 @@ class RB_Tree
 
 		bool is_red  = true;
 
-		Node(const KeyT& value):
-			value(value) {}
+		Node(const KeyT& _value):
+			value(_value) {}
 
-		Node(const KeyT& value, Node* parent, bool is_red = true):
-			value(value), parent(parent), is_red(is_red) {}
+		Node(const KeyT& _value, Node* _parent, bool _is_red = true):
+			value(_value), parent(_parent), is_red(_is_red) {}
 
 		Node* get_grandp()
 		{

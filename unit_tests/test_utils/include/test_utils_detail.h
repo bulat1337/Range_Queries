@@ -34,7 +34,7 @@ inline std::string get_answer(std::string_view file_name)
 {
 	std::ifstream answer_file;
 
-	answer_file.open(file_name);
+	answer_file.open(std::string(file_name));
 
 	if (!answer_file.is_open())
 	{
