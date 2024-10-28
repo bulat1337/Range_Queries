@@ -79,7 +79,7 @@ target_include_directories(unit_tests PRIVATE
 	${CMAKE_SOURCE_DIR}/unit_tests/test_utils/include
 	${CMAKE_SOURCE_DIR}/include
 	${CMAKE_SOURCE_DIR}/utils/include
-	${CMAKE_SOURCE_DIR}/rb_tree/include
+	${CMAKE_SOURCE_DIR}/RB_Tree/include
 )
 
 if(ENABLE_BD_TESTS)

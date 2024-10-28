@@ -2,7 +2,7 @@
 #define TEST_UTILS_DETAIL
 
 #include "range_queries.h"
-#include "rb_tree.h"
+#include "RB_Tree.h"
 
 namespace test_utils
 {

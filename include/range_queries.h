@@ -4,7 +4,7 @@
 #include <stddef.h>   // for size_t
 #include <iostream>   // for char_traits, basic_istream, basic_ostream, oper...
 
-#include "rb_tree.h"  // for RB_Tree
+#include "RB_Tree.h"  // for RB_Tree
 
 namespace range_queries
 {

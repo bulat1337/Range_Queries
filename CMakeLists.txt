@@ -86,7 +86,7 @@ add_executable(range_queries.x ./main.cpp)
 target_include_directories(range_queries.x PRIVATE
 	${CMAKE_SOURCE_DIR}/include
 	${CMAKE_SOURCE_DIR}/utils/include
-	${CMAKE_SOURCE_DIR}/rb_Tree/include)
+	${CMAKE_SOURCE_DIR}/RB_Tree/include)
 
 if(ENABLE_LOGGING)
 	target_compile_definitions(range_queries.x PRIVATE ENABLE_LOGGING)
