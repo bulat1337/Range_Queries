@@ -3,13 +3,18 @@ cmake_minimum_required(VERSION 3.14)
 project(Main)
 
 enable_testing()
+
+option(ENABLE_LOGGING "Enable logging" OFF)
+set(ENABLE_LOGGING ${ENABLE_LOGGING} CACHE BOOL "Enable logging" FORCE)
+
+option(ENABLE_BD_TESTS "Enables big data tests" OFF)
+set(ENABLE_BD_TESTS ${ENABLE_BD_TESTS} CACHE BOOL "Enables big data tests" FORCE)
+
+set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Build type")
 add_subdirectory(unit_tests/)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-option(ENABLE_LOGGING "Enable logging" OFF)
-option(ENABLE_BIG_TESTS "Enables big data tests" OFF)
 
 set(RELEASE_COMPILE_OPTIONS
 	-O2

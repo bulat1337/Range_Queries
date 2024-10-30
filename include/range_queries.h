@@ -5,6 +5,7 @@
 #include <iostream>   // for char_traits, basic_istream, basic_ostream, oper...
 
 #include "RB_Tree.h"  // for RB_Tree
+#include "log.h"
 
 namespace range_queries
 {
@@ -37,6 +38,11 @@ inline void start(std::istream& in, std::ostream& out)
 
 				auto lower_b = tree.lower_bound(left_b);
 				auto upper_b = tree.upper_bound(right_b);
+
+				#ifdef ENABLE_LOGGING
+				std::clog << lower_b << '\n';
+				std::clog << upper_b << '\n';
+				#endif
 
 				size_t distance = tree.distance(lower_b, upper_b);
 

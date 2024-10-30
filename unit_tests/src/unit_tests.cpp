@@ -14,8 +14,12 @@ TEST(range_queries, basic_2)
 	test_utils::run_test<int>("/common/basic_2");
 }
 
-#ifdef BD_TESTS
+TEST(range_queries, basic_3)
+{
+	test_utils::run_test<int>("/common/basic_3");
+}
 
+#ifdef ENABLE_BD_TESTS
 
 #endif
 

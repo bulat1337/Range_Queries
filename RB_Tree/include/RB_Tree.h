@@ -448,6 +448,8 @@ class RB_Tree
 	{
 		size_t distance = 0;
 
+		if (fst == nullptr) return 0;
+
 		Node* cur_node     = fst;
 		Node* last_visited = fst->left;
 
