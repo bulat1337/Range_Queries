@@ -367,7 +367,7 @@ class RB_Tree
 			subtree_insert(root_, value);
 	}
 
-	void dump_tree()
+	void dump()
 	{
 		std::string file_name = "tree_dump";
 		std::ofstream dump(file_name + ".dot");
@@ -448,7 +448,8 @@ class RB_Tree
 	{
 		size_t distance = 0;
 
-		if (fst == nullptr) return 0;
+		if (!fst) return 0;
+		if (snd && (snd->value < fst->value)) return 0;
 
 		Node* cur_node     = fst;
 		Node* last_visited = fst->left;

@@ -40,7 +40,10 @@ inline void start(std::istream& in, std::ostream& out)
 				auto upper_b = tree.upper_bound(right_b);
 
 				#ifdef ENABLE_LOGGING
+				if (lower_b) std::clog << lower_b->value << " - ";
 				std::clog << lower_b << '\n';
+
+				if (upper_b) std::clog << upper_b->value << " - ";
 				std::clog << upper_b << '\n';
 				#endif
 
@@ -57,6 +60,8 @@ inline void start(std::istream& in, std::ostream& out)
 							<< "\tq left_boundary right_right_boundary\n";
 		}
 	}
+
+	tree.dump();
 }
 
 };
