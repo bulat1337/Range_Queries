@@ -109,5 +109,9 @@ if(ENABLE_BD_TESTS)
     target_compile_definitions(unit_tests PRIVATE ENABLE_BD_TESTS)
 endif()
 
+if(ENABLE_LOGGING)
+    target_compile_definitions(unit_tests PRIVATE ENABLE_LOGGING)
+endif()
+
 enable_testing()
 add_test(NAME UnitTests COMMAND unit_tests)

@@ -401,6 +401,8 @@ class RB_Tree
 		iterator cur_node = root_;
 		iterator answer = nullptr;
 
+		if (!cur_node) return nullptr;
+
 		while (true)
 		{
 			if (key < cur_node->value)
@@ -425,6 +427,8 @@ class RB_Tree
 	{
 		iterator cur_node = root_;
 		iterator answer = nullptr;
+
+		if (!cur_node) return nullptr;
 
 		while (true)
 		{

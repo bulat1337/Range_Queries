@@ -39,6 +39,7 @@ inline void start(std::istream& in, std::ostream& out)
 				auto lower_b = tree.lower_bound(left_b);
 				auto upper_b = tree.upper_bound(right_b);
 
+
 				#ifdef ENABLE_LOGGING
 				if (lower_b) std::clog << lower_b->value << " - ";
 				std::clog << lower_b << '\n';

@@ -107,3 +107,26 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 else()
 	target_compile_options(range_queries.x PRIVATE ${RELEASE_COMPILE_OPTIONS})
 endif()
+
+# ----- ref executable -----
+
+add_executable(ref_range_queries.x ./ref_main.cpp)
+target_include_directories(ref_range_queries.x PRIVATE
+	${CMAKE_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/utils/include
+	${CMAKE_SOURCE_DIR}/RB_Tree/include)
+
+if(ENABLE_LOGGING)
+	target_compile_definitions(ref_range_queries.x PRIVATE ENABLE_LOGGING)
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	target_compile_definitions(ref_range_queries.x PRIVATE DEBUG)
+	target_compile_options(ref_range_queries.x PRIVATE ${DEBUG_COMPILE_OPTIONS})
+
+	target_link_options(ref_range_queries.x PRIVATE
+		-fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
+	)
+else()
+	target_compile_options(ref_range_queries.x PRIVATE ${RELEASE_COMPILE_OPTIONS})
+endif()
