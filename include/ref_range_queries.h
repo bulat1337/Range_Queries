@@ -38,7 +38,7 @@ namespace ref_range_queries
 
 					if (left_b > right_b)
 					{
-						out << 0 << '\n';
+						out << 0 << ' ';
 						break;
 					}
 
@@ -47,7 +47,7 @@ namespace ref_range_queries
 
 					auto distance = std::distance(lower_b, upper_b);
 
-					out << distance << '\n';
+					out << distance << ' ';
 
 					break;
 				}

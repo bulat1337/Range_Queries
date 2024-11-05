@@ -50,7 +50,7 @@ inline void start(std::istream& in, std::ostream& out)
 
 				size_t distance = tree.distance(lower_b, upper_b);
 
-				out << distance << '\n';
+				out << distance << ' ';
 
 				break;
 			}
