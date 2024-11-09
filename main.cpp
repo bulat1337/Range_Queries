@@ -2,8 +2,9 @@
 
 #include "range_queries.h" // for start
 
-int main() {
-  range_queries::start<int>(std::cin, std::cout);
+int main()
+{
+    range_queries::start<int>(std::cin, std::cout);
 
-  return 0;
+    return 0;
 }
