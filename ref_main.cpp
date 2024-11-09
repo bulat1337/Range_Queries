@@ -1,10 +1,9 @@
-#include <iostream>         // for cin, cout
+#include <iostream> // for cin, cout
 
-#include "ref_range_queries.h"  // for start
+#include "ref_range_queries.h" // for start
 
-int main()
-{
-	ref_range_queries::start<int>(std::cin, std::cout);
+int main() {
+  ref_range_queries::start<int>(std::cin, std::cout);
 
-	return 0;
+  return 0;
 }
