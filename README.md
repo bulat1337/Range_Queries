@@ -55,17 +55,28 @@ Customize the build with the following CMake options:
 
 - **Big Data Tests**: For testing with large datasets, enable big data tests:
 ```
-cmake .. -DENABLE_BD_TESTS=ON DENABLE_PERFECT_BD_TESTS=ON
+cmake .. -D ENABLE_BD_TESTS=ON DENABLE_PERFECT_BD_TESTS=ON
 ```
 
 - **Logging**: Enable logging for debugging purposes:
 ```
-cmake .. -DENABLE_LOGGING
+cmake .. -D ENABLE_LOGGING
 ```
 
 - **Debug Build**: Compile in Debug mode for additional diagnostic:
 ```
-cmake .. -DCMAKE_BUILD_TYPE=Debug
+cmake .. -D CMAKE_BUILD_TYPE=Debug
+```
+
+- **Grphviz tree dump**: Enable tree dump in the program to generate the resulting tree by running:
+```
+cmake .. -D DUMP_TREE=ON
+```
+
+#### Compiling the DOT file
+To compile the DOT file and create a PNG image, use the following command:
+```
+dot -Tpng tree_dump.dot -o tree_dump.png -Gdpi=100
 ```
 
 

@@ -62,7 +62,9 @@ template <typename T> inline void start(std::istream &in, std::ostream &out)
         }
     }
 
+	#ifdef DUMP_TREE
     tree.dump();
+	#endif // DUMP_TREE
 }
 
 }; // namespace range_queries

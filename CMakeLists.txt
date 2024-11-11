@@ -7,6 +7,9 @@ enable_testing()
 option(ENABLE_LOGGING "Enable logging" OFF)
 set(ENABLE_LOGGING ${ENABLE_LOGGING} CACHE BOOL "Enable logging" FORCE)
 
+option(DUMP_TREE "Enable logging" OFF)
+set(DUMP_TREE ${DUMP_TREE} CACHE BOOL "Enable logging" FORCE)
+
 option(ENABLE_BD_TESTS "Enables big data tests" OFF)
 set(ENABLE_BD_TESTS ${ENABLE_BD_TESTS} CACHE BOOL "Enables big data tests" FORCE)
 
@@ -93,10 +96,6 @@ target_include_directories(range_queries.x PRIVATE
 	${CMAKE_SOURCE_DIR}/utils/include
 	${CMAKE_SOURCE_DIR}/RB_Tree/include)
 
-if(ENABLE_LOGGING)
-	target_compile_definitions(range_queries.x PRIVATE ENABLE_LOGGING)
-endif()
-
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	target_compile_definitions(range_queries.x PRIVATE DEBUG)
 	target_compile_options(range_queries.x PRIVATE ${DEBUG_COMPILE_OPTIONS})
@@ -116,10 +115,6 @@ target_include_directories(ref_range_queries.x PRIVATE
 	${CMAKE_SOURCE_DIR}/utils/include
 	${CMAKE_SOURCE_DIR}/RB_Tree/include)
 
-if(ENABLE_LOGGING)
-	target_compile_definitions(ref_range_queries.x PRIVATE ENABLE_LOGGING)
-endif()
-
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	target_compile_definitions(ref_range_queries.x PRIVATE DEBUG)
 	target_compile_options(ref_range_queries.x PRIVATE ${DEBUG_COMPILE_OPTIONS})
@@ -129,4 +124,16 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	)
 else()
 	target_compile_options(ref_range_queries.x PRIVATE ${RELEASE_COMPILE_OPTIONS})
+endif()
+
+# ----- common options -----
+
+if(ENABLE_LOGGING)
+	target_compile_definitions(ref_range_queries.x PRIVATE ENABLE_LOGGING)
+	target_compile_definitions(range_queries.x PRIVATE ENABLE_LOGGING)
+endif()
+
+if(DUMP_TREE)
+	target_compile_definitions(ref_range_queries.x PRIVATE DUMP_TREE)
+	target_compile_definitions(range_queries.x PRIVATE DUMP_TREE)
 endif()

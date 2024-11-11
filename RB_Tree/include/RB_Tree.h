@@ -267,14 +267,6 @@ template <typename KeyT> class RB_Tree
         }
     }
 
-    void compile_dot(const std::string &file_name)
-    {
-        std::string cmd = "dot -Tpng " + file_name + ".dot -o " + file_name +
-                          ".png -Gdpi=100\n";
-
-        std::system(cmd.c_str());
-    }
-
   private:
     void free_data()
     {
@@ -403,8 +395,6 @@ template <typename KeyT> class RB_Tree
         dump_connections(root_, dump);
 
         dump << "}";
-
-        compile_dot(file_name);
     }
 
     iterator lower_bound(const KeyT &key) const
