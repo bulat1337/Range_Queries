@@ -62,6 +62,8 @@ template <typename T> inline void start(std::istream &in, std::ostream &out)
         }
     }
 
+	out << std::endl;
+
 	#ifdef DUMP_TREE
     tree.dump();
 	#endif // DUMP_TREE

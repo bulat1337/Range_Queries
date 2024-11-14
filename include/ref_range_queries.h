@@ -57,7 +57,10 @@ template <typename T> inline void start(std::istream &in, std::ostream &out)
                           << "\tq left_boundary right_right_boundary\n";
         }
     }
+
+	out << std::endl;
 }
+
 } // namespace ref_range_queries
 
 #endif // REF_RANGE_QUERIES_H
