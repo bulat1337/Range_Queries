@@ -58,7 +58,7 @@ template <typename T> inline void start(std::istream &in, std::ostream &out)
         }
     }
 
-	out << std::endl;
+    out << std::endl;
 }
 
 } // namespace ref_range_queries

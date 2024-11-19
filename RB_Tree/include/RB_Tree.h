@@ -4,9 +4,9 @@
 #include <cstdlib>
 
 #include <fstream>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "log.h"
 
@@ -18,23 +18,23 @@ namespace detail
 
 namespace html_colors
 {
-	static constexpr const char *blue_gray_ = "#48565D";
-    static constexpr const char *coral_pink_ = "#F08080";
-    static constexpr const char *navy_blue_ = "#0B0042";
-    static constexpr const char *black_ = "#1B1B1C";
-    static constexpr const char *red_ = "#820007";
-};
+static constexpr const char *blue_gray_ = "#48565D";
+static constexpr const char *coral_pink_ = "#F08080";
+static constexpr const char *navy_blue_ = "#0B0042";
+static constexpr const char *black_ = "#1B1B1C";
+static constexpr const char *red_ = "#820007";
+}; // namespace html_colors
 
-};
+}; // namespace detail
 
 template <typename KeyT> class Tree
 {
   private:
-	/* -----~ Usings ~----- */
-	struct Node;
-	using NodePtr = std::shared_ptr<Node>;
+    /* -----~ Usings ~----- */
+    struct Node;
+    using NodePtr = std::shared_ptr<Node>;
 
-	/* -----~ Node ~----- */
+    /* -----~ Node ~----- */
     struct Node
     {
         KeyT value;
@@ -83,17 +83,172 @@ template <typename KeyT> class Tree
             return (is_left_child() && parent->is_right_child()) ||
                    (is_right_child() && parent->is_left_child());
         }
+    };
 
-        NodePtr get_bro() const
+    /* -----~ Iterator ~----- */
+
+    static NodePtr sub_begin(NodePtr node)
+    {
+        while (node && node->left)
+            node = node->left;
+        return node;
+    }
+
+    static NodePtr sub_end(NodePtr node)
+    {
+        while (node && node->right)
+            node = node->right;
+        return node;
+    }
+
+    static NodePtr next(NodePtr node)
+    {
+        if (node->right)
+            return sub_begin(node->right);
+
+        NodePtr parent = node->parent;
+
+        while (parent && node == parent->right)
         {
-            return is_left_child() ? parent->right : parent->left;
+            node = parent;
+            parent = parent->parent;
+        }
+
+        return parent;
+    }
+
+    static NodePtr prev(NodePtr node)
+    {
+        if (node->left)
+            return sub_end(node->left);
+
+        NodePtr parent = node->parent;
+        while (parent && node == parent->left)
+        {
+            node = parent;
+            parent = parent->parent;
+        }
+
+        return parent;
+    }
+
+  public:
+    class iterator
+    {
+      public:
+        using value_type = KeyT;
+        using difference_type = std::ptrdiff_t;
+        using reference = KeyT &;
+        using pointer = NodePtr;
+        using iterator_category = std::bidirectional_iterator_tag;
+
+      public:
+        pointer node_;
+
+        iterator(pointer node = nullptr)
+            : node_(node)
+        {}
+
+        iterator(const iterator &other)
+            : node_(other.node_)
+        {}
+
+        iterator &operator=(const iterator &other)
+        {
+            node_ = other.node_;
+            return *this;
+        }
+
+        void swap(iterator &other) { std::swap(node_, other.node_); }
+
+        KeyT &operator*() const { return node_->value; }
+
+        iterator &operator++()
+        {
+            if (node_)
+                LOG("incrementing iterator of value {}\n", node_->value);
+            else
+                MSG("incrementing null iterator\n");
+
+            node_ = Tree::next(node_);
+            return *this;
+        }
+
+        iterator operator++(KeyT)
+        {
+            if (node_)
+                LOG("postincrementing iterator of value {}\n", node_->value);
+            else
+                MSG("postincrementing null iterator\n");
+
+            iterator tmp(*this);
+            node_ = Tree::next(node_);
+            return tmp;
+        }
+
+        iterator &operator--()
+        {
+            if (node_)
+                LOG("decrementing iterator of value {}\n", node_->value);
+            else
+                MSG("decrementing null iterator\n");
+
+            node_ = Tree::prev(node_);
+            return *this;
+        }
+
+        iterator operator--(KeyT)
+        {
+            if (node_)
+                LOG("postdecrementing iterator of value {}\n", node_->value);
+            else
+                MSG("postdecrementing null iterator\n");
+
+            iterator tmp(*this);
+            node_ = Tree::prev(node_);
+            return tmp;
+        }
+
+        bool operator==(const iterator &other) const
+        {
+            MSG("operator== called\n");
+            return node_ == other.node_;
+        }
+
+        bool operator==(const std::nullptr_t &other) const
+        {
+            MSG("operator== for nullptr called\n");
+            return node_ == other;
+        }
+
+        bool operator!=(const iterator &other) const
+        {
+            if (this->node_ && other.node_)
+                LOG("operator!= called for {} and {}\n", this->node_->value,
+                    other.node_->value);
+            else
+                MSG("operator!= called for null iterator\n");
+
+            return node_ != other.node_;
+        }
+
+        bool operator!=(const std::nullptr_t &other) const
+        {
+            MSG("operator== for nullptr called\n");
+            return node_ != other;
         }
     };
 
-  	/* -----~ members ~----- */
+    void swap(iterator &lhs, iterator &rhs) { lhs.swap(rhs); }
+
+    iterator beign() { return iterator(sub_begin(root_)); }
+    iterator end() { return iterator(nullptr); }
+
+  private:
+    /* -----~ members ~----- */
     NodePtr root_ = nullptr;
 
-  	/* -----~ private member-functions ~----- */
+    /* -----~ private member-functions ~----- */
     void rotate_left(NodePtr node)
     {
         NodePtr pivot = node->right;
@@ -243,7 +398,8 @@ template <typename KeyT> class Tree
             return nullptr;
 
         LOG("Copying {}\n", reference->value);
-        NodePtr created = std::make_shared<Node>(reference->value, parent, reference->is_red);
+        NodePtr created =
+            std::make_shared<Node>(reference->value, parent, reference->is_red);
 
         created->left = create_based_on(reference->left, created);
         created->right = create_based_on(reference->right, created);
@@ -251,7 +407,7 @@ template <typename KeyT> class Tree
         return created;
     }
 
-	/* -----~ graphviz dump ~----- */
+    /* -----~ graphviz dump ~----- */
     void dump_regular_nodes(NodePtr node, std::ostream &dump) const
     {
         if (node == nullptr)
@@ -259,10 +415,11 @@ template <typename KeyT> class Tree
 
         dump << "\t" << reinterpret_cast<size_t>(node.get())
              << "[shape = Mrecord, fillcolor = \""
-             << (node->is_red ? detail::html_colors::red_ : detail::html_colors::black_)
-			 << "\", label =  \"{" << node
-             << " | val: " << node->value << " | {L: " << node->left.get()
-             << " R: " << node->right.get() << "}}"
+             << (node->is_red ? detail::html_colors::red_
+                              : detail::html_colors::black_)
+             << "\", label =  \"{" << node << " | val: " << node->value
+             << " | {L: " << node->left.get() << " R: " << node->right.get()
+             << "}}"
              << "\" ];\n";
 
         dump_regular_nodes(node->left, dump);
@@ -293,53 +450,51 @@ template <typename KeyT> class Tree
     }
 
   public:
-    using iterator = NodePtr;
-
     Tree() = default;
 
-	Tree(const Tree &other)
-	{
-		MSG("Copy constructor called\n");
+    Tree(const Tree &other)
+    {
+        MSG("Copy constructor called\n");
 
-		if (!other.root_) return;
+        if (!other.root_)
+            return;
 
-		struct NodeContext
-		{
-			NodePtr original;
-			NodePtr copy;
-		};
+        struct NodeContext
+        {
+            NodePtr original;
+            NodePtr copy;
+        };
 
-		std::stack<NodeContext> stack;
+        std::stack<NodeContext> stack;
 
-		root_ = std::make_shared<Node>(other.root_->value, nullptr, other.root_->is_red);
-		stack.push({other.root_, root_});
+        root_ = std::make_shared<Node>(other.root_->value, nullptr,
+                                       other.root_->is_red);
+        stack.push({other.root_, root_});
 
-		while (!stack.empty())
-		{
-			NodeContext ctxt = stack.top();
-			stack.pop();
+        while (!stack.empty())
+        {
+            NodeContext ctxt = stack.top();
+            stack.pop();
 
-			if (ctxt.original->left)
-			{
-				ctxt.copy->left =
-					std::make_shared<Node>(	ctxt.original->left->value,
-											ctxt.copy,
-											ctxt.original->left->is_red);
+            if (ctxt.original->left)
+            {
+                ctxt.copy->left = std::make_shared<Node>(
+                    ctxt.original->left->value, ctxt.copy,
+                    ctxt.original->left->is_red);
 
-				stack.push({ctxt.original->left, ctxt.copy->left});
-			}
+                stack.push({ctxt.original->left, ctxt.copy->left});
+            }
 
-			if (ctxt.original->right)
-			{
-				ctxt.copy->right =
-					std::make_shared<Node>(	ctxt.original->right->value,
-											ctxt.copy,
-											ctxt.original->right->is_red);
+            if (ctxt.original->right)
+            {
+                ctxt.copy->right = std::make_shared<Node>(
+                    ctxt.original->right->value, ctxt.copy,
+                    ctxt.original->right->is_red);
 
-				stack.push({ctxt.original->right, ctxt.copy->right});
-			}
-		}
-	}
+                stack.push({ctxt.original->right, ctxt.copy->right});
+            }
+        }
+    }
 
     Tree &operator=(const Tree &other)
     {
@@ -357,7 +512,7 @@ template <typename KeyT> class Tree
 
     Tree(Tree &&other) noexcept
         : root_(std::move(other.root_))
-        // , data_(std::move(other.data_))
+    // , data_(std::move(other.data_))
     {
         MSG("Move constructor called\n");
         // other.data_.clear();
@@ -371,13 +526,7 @@ template <typename KeyT> class Tree
         if (this == &other)
             return *this;
 
-        // free_data();
-
         root_ = std::move(other.root_);
-        // data_ = std::move(other.data_);
-
-        // other.data_.clear();
-        // other.root_ = nullptr;
 
         return *this;
     }
@@ -432,11 +581,11 @@ template <typename KeyT> class Tree
 
     iterator lower_bound(const KeyT &key) const
     {
-        iterator cur_node = root_;
-        iterator answer{};
+        NodePtr cur_node = root_;
+        NodePtr answer{};
 
         if (!cur_node)
-            return nullptr;
+            return iterator{};
 
         while (true)
         {
@@ -444,29 +593,29 @@ template <typename KeyT> class Tree
             {
                 answer = cur_node;
                 if (cur_node->left == nullptr)
-                    return answer;
+                    return iterator(answer);
                 cur_node = cur_node->left;
             }
             else if (key > cur_node->value)
             {
                 if (cur_node->right == nullptr)
-                    return answer;
+                    return iterator(answer);
                 cur_node = cur_node->right;
             }
             else
-                return cur_node;
+                return iterator(cur_node);
         }
 
-        return answer;
+        return iterator(answer);
     }
 
     iterator upper_bound(const KeyT &key) const
     {
-        iterator cur_node = root_;
-        iterator answer = nullptr;
+        NodePtr cur_node = root_;
+        NodePtr answer = nullptr;
 
         if (!cur_node)
-            return nullptr;
+            return iterator{};
 
         while (true)
         {
@@ -474,81 +623,21 @@ template <typename KeyT> class Tree
             {
                 answer = cur_node;
                 if (cur_node->left == nullptr)
-                    return answer;
+                    return iterator(answer);
                 cur_node = cur_node->left;
             }
             else if (key >= cur_node->value)
             {
                 if (cur_node->right == nullptr)
-                    return answer;
+                    return iterator(answer);
                 cur_node = cur_node->right;
             }
         }
 
-        return answer;
-    }
-
-    size_t distance(iterator fst, iterator snd) const
-    {
-        size_t distance = 0;
-
-        if (!fst || (snd && (snd->value < fst->value)))
-            return 0;
-
-        NodePtr cur_node = fst;
-        NodePtr last_visited = fst->left;
-
-        while (cur_node != nullptr)
-        {
-            if (last_visited == cur_node->parent)
-            {
-                if (cur_node->left != nullptr)
-                {
-                    last_visited = cur_node;
-                    cur_node = cur_node->left;
-                    continue;
-                }
-                else
-                    last_visited = nullptr;
-            }
-
-            if (last_visited == cur_node->left)
-            {
-                if (cur_node == snd)
-                    break;
-
-                ++distance;
-
-                LOG("Counting {}\n", cur_node->value);
-
-                if (cur_node->right != nullptr)
-                {
-                    last_visited = cur_node;
-                    cur_node = cur_node->right;
-                    continue;
-                }
-                else
-                    last_visited = nullptr;
-            }
-
-            if (last_visited == cur_node->right)
-            {
-                last_visited = cur_node;
-                cur_node = cur_node->parent;
-            }
-        }
-
-        return distance;
-    }
-
-    ~Tree()
-    {
-        MSG("Destructor called\n");
-
-        // free_data();
+        return iterator(answer);
     }
 };
 
-};
+}; // namespace RB
 
 #endif // RB_TREE_H

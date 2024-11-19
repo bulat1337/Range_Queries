@@ -1,10 +1,14 @@
-#include <gtest/gtest.h> // for Test, TestInfo (ptr only), TEST
+#include <gtest/gtest.h>        // for Test, Message, TestInfo (ptr only)
 
-#include <string> // for basic_string
+#include <stddef.h>             // for size_t
+#include <iterator>             // for distance
+#include <string>               // for basic_string
+#include <utility>              // for move
 
-#include "test_utils.h" // for run_test
-
-#include "RB_Tree.h"
+#include "RB_Tree.h"            // for Tree
+#include "log.h"                // for MSG, LOG
+#include "test_utils.h"         // for run_test
+#include "test_utils_detail.h"  // for Ref_Start_Wrapper, Start_Wrapper
 
 class RBTreeTest : public ::testing::Test
 {
@@ -23,6 +27,8 @@ class RBTreeTest : public ::testing::Test
         tree.insert(7);
         tree.insert(12);
         tree.insert(18);
+
+        tree.dump();
     }
 };
 
@@ -30,20 +36,20 @@ TEST_F(RBTreeTest, InsertTest)
 {
     ASSERT_NE(tree.lower_bound(10), nullptr);
 
-    EXPECT_EQ(tree.lower_bound(10)->value, 10);
-    EXPECT_EQ(tree.lower_bound(5)->value, 5);
-    EXPECT_EQ(tree.lower_bound(15)->value, 15);
+    EXPECT_EQ(*tree.lower_bound(10), 10);
+    EXPECT_EQ(*tree.lower_bound(5), 5);
+    EXPECT_EQ(*tree.lower_bound(15), 15);
 }
 
 TEST_F(RBTreeTest, LowerBoundTest)
 {
     auto it = tree.lower_bound(6);
     ASSERT_NE(it, nullptr);
-    EXPECT_EQ(it->value, 7);
+    EXPECT_EQ(*it, 7);
 
     it = tree.lower_bound(10);
     ASSERT_NE(it, nullptr);
-    EXPECT_EQ(it->value, 10);
+    EXPECT_EQ(*it, 10);
 
     it = tree.lower_bound(20);
     EXPECT_EQ(it, nullptr);
@@ -53,7 +59,7 @@ TEST_F(RBTreeTest, UpperBoundTest)
 {
     auto it = tree.upper_bound(10);
     ASSERT_NE(it, nullptr);
-    EXPECT_EQ(it->value, 12);
+    EXPECT_EQ(*it, 12);
 
     it = tree.upper_bound(18);
     EXPECT_EQ(it, nullptr);
@@ -63,13 +69,17 @@ TEST_F(RBTreeTest, DistanceTest)
 {
     auto it1 = tree.lower_bound(5);
     auto it2 = tree.lower_bound(12);
-    EXPECT_EQ(tree.distance(it1, it2), 3);
+    LOG("Calculating dist between {} and {}\n", *it1, *it2);
+    EXPECT_EQ(std::distance(it1, it2), 3);
+    MSG("OK\n");
 
-    EXPECT_EQ(tree.distance(it1, it1), 0);
+    EXPECT_EQ(std::distance(it1, it1), 0);
+    MSG("OK\n");
 
-    it1 = tree.lower_bound(12);
-    it2 = tree.lower_bound(5);
-    EXPECT_EQ(tree.distance(it1, it2), 0);
+    // it1 = tree.lower_bound(12);
+    // it2 = tree.lower_bound(5);
+    // EXPECT_EQ(std::distance(it1, it2), 0);
+    // MSG("OK\n");
 }
 
 TEST_F(RBTreeTest, CopyConstructorTest)
@@ -78,7 +88,7 @@ TEST_F(RBTreeTest, CopyConstructorTest)
 
     auto it = copy_tree.lower_bound(10);
     ASSERT_NE(it, nullptr);
-    EXPECT_EQ(it->value, 10);
+    EXPECT_EQ(*it, 10);
 }
 
 TEST_F(RBTreeTest, MoveConstructorTest)
@@ -87,7 +97,7 @@ TEST_F(RBTreeTest, MoveConstructorTest)
 
     auto it = moved_tree.lower_bound(10);
     ASSERT_NE(it, nullptr);
-    EXPECT_EQ(it->value, 10);
+    EXPECT_EQ(*it, 10);
 
     EXPECT_EQ(tree.lower_bound(10), nullptr);
 }
@@ -99,7 +109,7 @@ TEST_F(RBTreeTest, CopyAssignmentTest)
 
     auto it = copy_tree.lower_bound(10);
     ASSERT_NE(it, nullptr);
-    EXPECT_EQ(it->value, 10);
+    EXPECT_EQ(*it, 10);
 }
 
 TEST_F(RBTreeTest, MoveAssignmentTest)
@@ -109,7 +119,7 @@ TEST_F(RBTreeTest, MoveAssignmentTest)
 
     auto it = moved_tree.lower_bound(10);
     ASSERT_NE(it, nullptr);
-    EXPECT_EQ(it->value, 10);
+    EXPECT_EQ(*it, 10);
 
     EXPECT_EQ(tree.lower_bound(10), nullptr);
 }
@@ -121,7 +131,7 @@ TEST_F(RBTreeTest, copy_ctor)
     auto lb = tree_copy.lower_bound(min);
     auto ub = tree_copy.upper_bound(max);
 
-    EXPECT_EQ(tree_copy.distance(lb, ub), size);
+    EXPECT_EQ(std::distance(lb, ub), size);
 }
 
 TEST_F(RBTreeTest, move_ctor)
@@ -131,7 +141,7 @@ TEST_F(RBTreeTest, move_ctor)
     auto lb = tree_copy.lower_bound(min);
     auto ub = tree_copy.upper_bound(max);
 
-    EXPECT_EQ(tree_copy.distance(lb, ub), size);
+    EXPECT_EQ(std::distance(lb, ub), size);
 }
 
 TEST_F(RBTreeTest, copy_assign)
@@ -141,7 +151,7 @@ TEST_F(RBTreeTest, copy_assign)
     auto lb = tree_copy.lower_bound(min);
     auto ub = tree_copy.upper_bound(max);
 
-    EXPECT_EQ(tree_copy.distance(lb, ub), size);
+    EXPECT_EQ(std::distance(lb, ub), size);
 }
 
 TEST_F(RBTreeTest, move_assign)
@@ -151,7 +161,7 @@ TEST_F(RBTreeTest, move_assign)
     auto lb = tree_copy.lower_bound(min);
     auto ub = tree_copy.upper_bound(max);
 
-    EXPECT_EQ(tree_copy.distance(lb, ub), size);
+    EXPECT_EQ(std::distance(lb, ub), size);
 }
 
 TEST(range_queries, basic_1)

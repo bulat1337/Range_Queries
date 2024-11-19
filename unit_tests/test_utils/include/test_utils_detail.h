@@ -40,8 +40,7 @@ std::string get_result(std::string_view file_name)
     }
 
     std::stringstream result;
-    Start_Wrapper{}.template operator()<T>(test_data,
-                                           result); // Specify T explicitly
+    Start_Wrapper{}.template operator()<T>(test_data, result);
     return result.str();
 }
 
@@ -60,7 +59,8 @@ inline std::string get_answer(std::string_view file_name)
     std::string answer((std::istreambuf_iterator<char>(answer_file)),
                        std::istreambuf_iterator<char>());
 
-    // answer.erase(std::remove(answer.begin(), answer.end(), '\n'), answer.end());
+    // answer.erase(std::remove(answer.begin(), answer.end(), '\n'),
+    // answer.end());
 
     return answer;
 }
