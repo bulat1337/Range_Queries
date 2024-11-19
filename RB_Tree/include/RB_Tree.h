@@ -297,12 +297,49 @@ template <typename KeyT> class Tree
 
     Tree() = default;
 
-    Tree(const Tree &other)
-    {
-        MSG("Copy constructor called\n");
+	Tree(const Tree &other)
+	{
+		MSG("Copy constructor called\n");
 
-        root_ = create_based_on(other.root_, nullptr);
-    }
+		if (!other.root_) return;
+
+		struct NodeContext
+		{
+			NodePtr original;
+			NodePtr copy;
+		};
+
+		std::stack<NodeContext> stack;
+
+		root_ = std::make_shared<Node>(other.root_->value, nullptr, other.root_->is_red);
+		stack.push({other.root_, root_});
+
+		while (!stack.empty())
+		{
+			NodeContext ctxt = stack.top();
+			stack.pop();
+
+			if (ctxt.original->left)
+			{
+				ctxt.copy->left =
+					std::make_shared<Node>(	ctxt.original->left->value,
+											ctxt.copy,
+											ctxt.original->left->is_red);
+
+				stack.push({ctxt.original->left, ctxt.copy->left});
+			}
+
+			if (ctxt.original->right)
+			{
+				ctxt.copy->right =
+					std::make_shared<Node>(	ctxt.original->right->value,
+											ctxt.copy,
+											ctxt.original->right->is_red);
+
+				stack.push({ctxt.original->right, ctxt.copy->right});
+			}
+		}
+	}
 
     Tree &operator=(const Tree &other)
     {
