@@ -9,7 +9,7 @@
 class RBTreeTest : public ::testing::Test
 {
   protected:
-    RB_Tree<int> tree;
+    RB::Tree<int> tree;
     size_t size = 7;
     int min = 3;
     int max = 18;
@@ -74,7 +74,7 @@ TEST_F(RBTreeTest, DistanceTest)
 
 TEST_F(RBTreeTest, CopyConstructorTest)
 {
-    RB_Tree<int> copy_tree(tree);
+    RB::Tree<int> copy_tree(tree);
 
     auto it = copy_tree.lower_bound(10);
     ASSERT_NE(it, nullptr);
@@ -83,7 +83,7 @@ TEST_F(RBTreeTest, CopyConstructorTest)
 
 TEST_F(RBTreeTest, MoveConstructorTest)
 {
-    RB_Tree<int> moved_tree(std::move(tree));
+    RB::Tree<int> moved_tree(std::move(tree));
 
     auto it = moved_tree.lower_bound(10);
     ASSERT_NE(it, nullptr);
@@ -94,7 +94,7 @@ TEST_F(RBTreeTest, MoveConstructorTest)
 
 TEST_F(RBTreeTest, CopyAssignmentTest)
 {
-    RB_Tree<int> copy_tree;
+    RB::Tree<int> copy_tree;
     copy_tree = tree;
 
     auto it = copy_tree.lower_bound(10);
@@ -104,7 +104,7 @@ TEST_F(RBTreeTest, CopyAssignmentTest)
 
 TEST_F(RBTreeTest, MoveAssignmentTest)
 {
-    RB_Tree<int> moved_tree;
+    RB::Tree<int> moved_tree;
     moved_tree = std::move(tree);
 
     auto it = moved_tree.lower_bound(10);
@@ -116,7 +116,7 @@ TEST_F(RBTreeTest, MoveAssignmentTest)
 
 TEST_F(RBTreeTest, copy_ctor)
 {
-    RB_Tree<int> tree_copy(tree);
+    RB::Tree<int> tree_copy(tree);
 
     auto lb = tree_copy.lower_bound(min);
     auto ub = tree_copy.upper_bound(max);
@@ -126,7 +126,7 @@ TEST_F(RBTreeTest, copy_ctor)
 
 TEST_F(RBTreeTest, move_ctor)
 {
-    RB_Tree<int> tree_copy(std::move(tree));
+    RB::Tree<int> tree_copy(std::move(tree));
 
     auto lb = tree_copy.lower_bound(min);
     auto ub = tree_copy.upper_bound(max);
@@ -136,7 +136,7 @@ TEST_F(RBTreeTest, move_ctor)
 
 TEST_F(RBTreeTest, copy_assign)
 {
-    RB_Tree<int> tree_copy = tree;
+    RB::Tree<int> tree_copy = tree;
 
     auto lb = tree_copy.lower_bound(min);
     auto ub = tree_copy.upper_bound(max);
@@ -146,7 +146,7 @@ TEST_F(RBTreeTest, copy_assign)
 
 TEST_F(RBTreeTest, move_assign)
 {
-    RB_Tree<int> tree_copy = std::move(tree);
+    RB::Tree<int> tree_copy = std::move(tree);
 
     auto lb = tree_copy.lower_bound(min);
     auto ub = tree_copy.upper_bound(max);

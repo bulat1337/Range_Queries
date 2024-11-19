@@ -6,20 +6,39 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "log.h"
 
-template <typename KeyT> class RB_Tree
+namespace RB
+{
+
+namespace detail
+{
+
+namespace html_colors
+{
+	static constexpr const char *blue_gray_ = "#48565D";
+    static constexpr const char *coral_pink_ = "#F08080";
+    static constexpr const char *navy_blue_ = "#0B0042";
+    static constexpr const char *black_ = "#1B1B1C";
+    static constexpr const char *red_ = "#820007";
+};
+
+};
+
+template <typename KeyT> class Tree
 {
   private:
+	/* -----~ Node ~----- */
     struct Node
     {
         KeyT value;
 
-        Node *right = nullptr;
-        Node *left = nullptr;
+        Node* right = nullptr;
+        Node* left = nullptr;
 
-        Node *parent = nullptr;
+        Node* parent = nullptr;
 
         bool is_red = true;
 
@@ -27,13 +46,13 @@ template <typename KeyT> class RB_Tree
             : value(_value)
         {}
 
-        Node(const KeyT &_value, Node *_parent, bool _is_red = true)
+        Node(const KeyT &_value, Node* _parent, bool _is_red = true)
             : value(_value)
             , parent(_parent)
             , is_red(_is_red)
         {}
 
-        Node *get_grandp()
+        Node* get_grandp() const
         {
             if (parent != nullptr)
                 return parent->parent;
@@ -41,9 +60,9 @@ template <typename KeyT> class RB_Tree
             return nullptr;
         }
 
-        Node *get_unc()
+        Node* get_unc() const
         {
-            Node *grandparent = get_grandp();
+            Node* grandparent = get_grandp();
 
             if (grandparent == nullptr)
                 return nullptr;
@@ -52,37 +71,30 @@ template <typename KeyT> class RB_Tree
                                                 : grandparent->right;
         }
 
-        bool is_left_child() { return parent->left == this; }
+        bool is_left_child() const { return parent->left == this; }
 
-        bool is_right_child() { return !is_left_child(); }
+        bool is_right_child() const { return !is_left_child(); }
 
-        bool is_triangle()
+        bool is_triangle() const
         {
             return (is_left_child() && parent->is_right_child()) ||
                    (is_right_child() && parent->is_left_child());
         }
 
-        Node *get_bro()
+        Node* get_bro() const
         {
             return is_left_child() ? parent->right : parent->left;
         }
     };
 
-  private:
-    Node *root_ = nullptr;
-    std::vector<Node *> data_;
+  	/* -----~ members ~----- */
+    Node* root_ = nullptr;
+    std::vector<Node* > data_;
 
-  private:
-    static constexpr const char *blue_gray_ = "#48565D";
-    static constexpr const char *coral_pink_ = "#F08080";
-    static constexpr const char *navy_blue_ = "#0B0042";
-    static constexpr const char *black_ = "#1B1B1C";
-    static constexpr const char *red_ = "#820007";
-
-  private:
-    void rotate_left(Node *node)
+  	/* -----~ private member-functions ~----- */
+    void rotate_left(Node* node)
     {
-        Node *pivot = node->right;
+        Node* pivot = node->right;
 
         pivot->parent = node->parent;
 
@@ -104,9 +116,9 @@ template <typename KeyT> class RB_Tree
         pivot->left = node;
     }
 
-    void rotate_right(Node *node)
+    void rotate_right(Node* node)
     {
-        Node *pivot = node->left;
+        Node* pivot = node->left;
 
         pivot->parent = node->parent;
         if (node->parent != nullptr)
@@ -127,13 +139,13 @@ template <typename KeyT> class RB_Tree
         pivot->right = node;
     }
 
-    void subtree_insert(Node *sub_root, const KeyT &value)
+    void subtree_insert(Node* sub_root, const KeyT &value)
     {
         if (value > sub_root->value)
         {
             if (sub_root->right == nullptr)
             {
-                Node *inserted_node = new Node(value, sub_root);
+                Node* inserted_node = new Node(value, sub_root);
                 sub_root->right = inserted_node;
 
                 data_.emplace_back(inserted_node);
@@ -149,7 +161,7 @@ template <typename KeyT> class RB_Tree
         {
             if (sub_root->left == nullptr)
             {
-                Node *inserted_node = new Node(value, sub_root);
+                Node* inserted_node = new Node(value, sub_root);
                 sub_root->left = inserted_node;
 
                 data_.emplace_back(inserted_node);
@@ -165,10 +177,10 @@ template <typename KeyT> class RB_Tree
         return;
     }
 
-    void handle_black_unc(Node *cur_node)
+    void handle_black_unc(Node* cur_node)
     {
-        Node *parent = cur_node->parent;
-        Node *grandparent = cur_node->get_grandp();
+        Node* parent = cur_node->parent;
+        Node* grandparent = cur_node->get_grandp();
 
         if (cur_node->is_left_child() && parent->is_right_child())
         {
@@ -193,19 +205,19 @@ template <typename KeyT> class RB_Tree
         paint_red(grandparent);
     }
 
-    void fix_violation(Node *cur_node)
+    void fix_violation(Node* cur_node)
     {
         while (cur_node != root_ && cur_node->parent->is_red)
         {
-            Node *parent = cur_node->parent;
-            Node *uncle = cur_node->get_unc();
+            Node* parent = cur_node->parent;
+            Node* uncle = cur_node->get_unc();
 
             if (uncle && uncle->is_red)
             {
                 paint_black(parent);
                 paint_black(uncle);
 
-                Node *grandparent = cur_node->get_grandp();
+                Node* grandparent = cur_node->get_grandp();
 
                 paint_red(grandparent);
                 cur_node = grandparent;
@@ -219,23 +231,51 @@ template <typename KeyT> class RB_Tree
         paint_black(root_);
     }
 
-    void paint_black(Node *node)
+    void paint_black(Node* node) const
     {
         if (node != nullptr)
             node->is_red = false;
     }
 
-    void paint_red(Node *node) { node->is_red = true; }
+    void paint_red(Node* node) const { node->is_red = true; }
 
-  private:
-    void dump_regular_nodes(Node *node, std::ostream &dump)
+	    void free_data()
+    {
+        for (auto &elem : data_)
+        {
+            LOG("Deleting {}\n", elem->value);
+            delete elem;
+        }
+
+        root_ = nullptr;
+        data_.clear();
+    }
+
+    Node* create_based_on(const Node* reference, Node* parent)
+    {
+        if (reference == nullptr)
+            return nullptr;
+
+        LOG("Copying {}\n", reference->value);
+        Node* created = new Node(reference->value, parent, reference->is_red);
+        data_.push_back(created);
+
+        created->left = create_based_on(reference->left, created);
+        created->right = create_based_on(reference->right, created);
+
+        return created;
+    }
+
+	/* -----~ graphviz dump ~----- */
+    void dump_regular_nodes(Node* node, std::ostream &dump) const
     {
         if (node == nullptr)
             return;
 
         dump << "\t" << reinterpret_cast<size_t>(node)
              << "[shape = Mrecord, fillcolor = \""
-             << (node->is_red ? red_ : black_) << "\", label =  \"{" << node
+             << (node->is_red ? detail::html_colors::red_ : detail::html_colors::black_)
+			 << "\", label =  \"{" << node
              << " | val: " << node->value << " | {L: " << node->left
              << " R: " << node->right << "}}"
              << "\" ];\n";
@@ -245,7 +285,7 @@ template <typename KeyT> class RB_Tree
         dump_regular_nodes(node->right, dump);
     }
 
-    void dump_connections(Node *node, std::ostream &dump)
+    void dump_connections(Node* node, std::ostream &dump) const
     {
         if (node == nullptr)
             return;
@@ -267,47 +307,19 @@ template <typename KeyT> class RB_Tree
         }
     }
 
-  private:
-    void free_data()
-    {
-        for (auto &elem : data_)
-        {
-            LOG("Deleting {}\n", elem->value);
-            delete elem;
-        }
-
-        root_ = nullptr;
-        data_.clear();
-    }
-
-    Node *create_based_on(const Node *reference, Node *parent)
-    {
-        if (reference == nullptr)
-            return nullptr;
-
-        LOG("Copying {}\n", reference->value);
-        Node *created = new Node(reference->value, parent, reference->is_red);
-        data_.push_back(created);
-
-        created->left = create_based_on(reference->left, created);
-        created->right = create_based_on(reference->right, created);
-
-        return created;
-    }
-
   public:
-    using iterator = Node *;
+    using iterator = Node* ;
 
-    RB_Tree() = default;
+    Tree() = default;
 
-    RB_Tree(const RB_Tree &other)
+    Tree(const Tree &other)
     {
         MSG("Copy constructor called\n");
 
         root_ = create_based_on(other.root_, nullptr);
     }
 
-    RB_Tree &operator=(const RB_Tree &other)
+    Tree &operator=(const Tree &other)
     {
         MSG("Copy assignment called\n");
 
@@ -321,7 +333,7 @@ template <typename KeyT> class RB_Tree
         return *this;
     }
 
-    RB_Tree(RB_Tree &&other) noexcept
+    Tree(Tree &&other) noexcept
         : root_(std::move(other.root_))
         , data_(std::move(other.data_))
     {
@@ -330,7 +342,7 @@ template <typename KeyT> class RB_Tree
         other.root_ = nullptr;
     }
 
-    RB_Tree &operator=(RB_Tree &&other) noexcept
+    Tree &operator=(Tree &&other) noexcept
     {
         MSG("Move assignment called\n");
 
@@ -362,19 +374,19 @@ template <typename KeyT> class RB_Tree
             subtree_insert(root_, value);
     }
 
-    void dump()
+    void dump() const
     {
         std::string file_name = "tree_dump";
         std::ofstream dump(file_name + ".dot");
 
         dump << "digraph BinaryTree {\n"
                 "bgcolor = \""
-             << blue_gray_
+             << detail::html_colors::blue_gray_
              << "\";\n"
                 "edge[minlen = 3, penwidth = 3; color = \"black\"];\n"
                 "node[shape = \"rectangle\", style = \"rounded, filled\",\n"
                 "\tfillcolor = \""
-             << coral_pink_
+             << detail::html_colors::coral_pink_
              << "\",\n"
                 "\tfontsize = 30,\n"
                 "\theight = 3,\n"
@@ -382,7 +394,7 @@ template <typename KeyT> class RB_Tree
 
         dump << "{rank = min;\n"
                 "\tlist_manager [shape = Mrecord, fillcolor = \""
-             << navy_blue_
+             << detail::html_colors::navy_blue_
              << "\", "
                 "label = \"{ROOT: "
              << root_
@@ -455,7 +467,7 @@ template <typename KeyT> class RB_Tree
         return answer;
     }
 
-    size_t distance(iterator fst, iterator snd)
+    size_t distance(iterator fst, iterator snd) const
     {
         size_t distance = 0;
 
@@ -464,8 +476,8 @@ template <typename KeyT> class RB_Tree
         if (snd && (snd->value < fst->value))
             return 0;
 
-        Node *cur_node = fst;
-        Node *last_visited = fst->left;
+        Node* cur_node = fst;
+        Node* last_visited = fst->left;
 
         while (cur_node != nullptr)
         {
@@ -510,12 +522,14 @@ template <typename KeyT> class RB_Tree
         return distance;
     }
 
-    ~RB_Tree()
+    ~Tree()
     {
         MSG("Destructor called\n");
 
         free_data();
     }
+};
+
 };
 
 #endif // RB_TREE_H

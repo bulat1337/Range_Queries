@@ -12,7 +12,7 @@ namespace range_queries
 
 template <typename T> inline void start(std::istream &in, std::ostream &out)
 {
-    RB_Tree<T> tree;
+    RB::Tree<T> tree;
     char option = 0;
 
     while (in >> option)
