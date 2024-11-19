@@ -13,7 +13,7 @@
 namespace test_utils
 {
 
-template <typename T, typename StartWrapper>
+template <typename Tree, typename T>
 void run_test(const std::string &test_name)
 {
     std::string test_folder = "data";
@@ -22,7 +22,7 @@ void run_test(const std::string &test_name)
         std::string(TEST_DATA_DIR) + test_folder + test_name;
 
     std::string result =
-        detail::get_result<T, StartWrapper>(test_path + ".dat");
+        detail::get_result<Tree, T>(test_path + ".dat");
     std::string answer = detail::get_answer(test_path + ".ans");
 
     EXPECT_EQ(result, answer);

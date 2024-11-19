@@ -134,6 +134,5 @@ if(ENABLE_LOGGING)
 endif()
 
 if(DUMP_TREE)
-	target_compile_definitions(ref_range_queries.x PRIVATE DUMP_TREE)
 	target_compile_definitions(range_queries.x PRIVATE DUMP_TREE)
 endif()

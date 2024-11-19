@@ -3,7 +3,6 @@
 
 #include "RB_Tree.h"
 #include "range_queries.h"
-#include "ref_range_queries.h"
 
 namespace test_utils
 {
@@ -11,25 +10,7 @@ namespace test_utils
 namespace detail
 {
 
-struct Start_Wrapper
-{
-    template <typename T>
-    void operator()(std::istream &in, std::ostream &out) const
-    {
-        range_queries::start<T>(in, out);
-    }
-};
-
-struct Ref_Start_Wrapper
-{
-    template <typename T>
-    void operator()(std::istream &in, std::ostream &out) const
-    {
-        ref_range_queries::start<T>(in, out);
-    }
-};
-
-template <typename T, typename Start_Wrapper>
+template <typename Tree, typename T>
 std::string get_result(std::string_view file_name)
 {
     std::ifstream test_data(file_name.data());
@@ -40,7 +21,9 @@ std::string get_result(std::string_view file_name)
     }
 
     std::stringstream result;
-    Start_Wrapper{}.template operator()<T>(test_data, result);
+
+    range_queries::start<Tree, T>(test_data, result);
+
     return result.str();
 }
 

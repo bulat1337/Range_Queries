@@ -10,9 +10,10 @@
 namespace range_queries
 {
 
-template <typename T> inline void start(std::istream &in, std::ostream &out)
+template <typename Tree, typename T>
+inline void start(std::istream &in, std::ostream &out)
 {
-    RB::Tree<T> tree;
+    Tree tree;
     char option = 0;
 
     while (in >> option)
@@ -34,18 +35,20 @@ template <typename T> inline void start(std::istream &in, std::ostream &out)
                 T right_b{};
 
                 in >> left_b >> right_b;
+                LOG("query from {} to {}\n", left_b, right_b);
+
+                if (left_b > right_b)
+                {
+                    out << 0 << ' ';
+                    break;
+                }
 
                 auto lower_b = tree.lower_bound(left_b);
                 auto upper_b = tree.upper_bound(right_b);
 
-                if (lower_b != nullptr && upper_b != nullptr &&
-                    (*lower_b > *upper_b))
-                    out << 0 << ' ';
-                else
-                {
-                    auto distance = std::distance(lower_b, upper_b);
-                    out << distance << ' ';
-                }
+                auto distance = std::distance(lower_b, upper_b);
+
+                out << distance << ' ';
 
                 break;
             }

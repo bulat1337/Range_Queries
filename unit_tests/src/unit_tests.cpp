@@ -166,31 +166,31 @@ TEST_F(RBTreeTest, move_assign)
 
 TEST(range_queries, basic_1)
 {
-    test_utils::run_test<int, test_utils::detail::Start_Wrapper>(
+    test_utils::run_test<RB::Tree<int>, int>(
         "/common/basic_1");
 }
 
 TEST(range_queries, basic_2)
 {
-    test_utils::run_test<int, test_utils::detail::Start_Wrapper>(
+    test_utils::run_test<RB::Tree<int>, int>(
         "/common/basic_2");
 }
 
 TEST(range_queries, basic_3)
 {
-    test_utils::run_test<int, test_utils::detail::Start_Wrapper>(
+    test_utils::run_test<RB::Tree<int>, int>(
         "/common/basic_3");
 }
 
 TEST(range_queries, basic_4)
 {
-    test_utils::run_test<int, test_utils::detail::Start_Wrapper>(
+    test_utils::run_test<RB::Tree<int>, int>(
         "/common/basic_4");
 }
 
 TEST(range_queries, basic_5)
 {
-    test_utils::run_test<int, test_utils::detail::Start_Wrapper>(
+    test_utils::run_test<RB::Tree<int>, int>(
         "/common/basic_5");
 }
 
@@ -198,31 +198,31 @@ TEST(range_queries, basic_5)
 
 TEST(ref_range_queries, basic_1)
 {
-    test_utils::run_test<int, test_utils::detail::Ref_Start_Wrapper>(
+    test_utils::run_test<std::set<int>, int>(
         "/common/basic_1");
 }
 
 TEST(ref_range_queries, basic_2)
 {
-    test_utils::run_test<int, test_utils::detail::Ref_Start_Wrapper>(
+    test_utils::run_test<std::set<int>, int>(
         "/common/basic_2");
 }
 
 TEST(ref_range_queries, basic_3)
 {
-    test_utils::run_test<int, test_utils::detail::Ref_Start_Wrapper>(
+    test_utils::run_test<std::set<int>, int>(
         "/common/basic_3");
 }
 
 TEST(ref_range_queries, basic_4)
 {
-    test_utils::run_test<int, test_utils::detail::Ref_Start_Wrapper>(
+    test_utils::run_test<std::set<int>, int>(
         "/common/basic_4");
 }
 
 TEST(ref_range_queries, basic_5)
 {
-    test_utils::run_test<int, test_utils::detail::Ref_Start_Wrapper>(
+    test_utils::run_test<std::set<int>, int>(
         "/common/basic_5");
 }
 
