@@ -30,15 +30,18 @@ namespace html_colors
 template <typename KeyT> class Tree
 {
   private:
+	/* -----~ Usings ~----- */
+	struct Node;
+	using NodePtr = std::shared_ptr<Node>;
+
 	/* -----~ Node ~----- */
     struct Node
     {
         KeyT value;
 
-        Node* right = nullptr;
-        Node* left = nullptr;
-
-        Node* parent = nullptr;
+        NodePtr right{};
+        NodePtr left{};
+        NodePtr parent{};
 
         bool is_red = true;
 
@@ -46,13 +49,13 @@ template <typename KeyT> class Tree
             : value(_value)
         {}
 
-        Node(const KeyT &_value, Node* _parent, bool _is_red = true)
+        Node(const KeyT &_value, NodePtr _parent, bool _is_red = true)
             : value(_value)
             , parent(_parent)
             , is_red(_is_red)
         {}
 
-        Node* get_grandp() const
+        NodePtr get_grandp() const
         {
             if (parent != nullptr)
                 return parent->parent;
@@ -60,9 +63,9 @@ template <typename KeyT> class Tree
             return nullptr;
         }
 
-        Node* get_unc() const
+        NodePtr get_unc() const
         {
-            Node* grandparent = get_grandp();
+            NodePtr grandparent = get_grandp();
 
             if (grandparent == nullptr)
                 return nullptr;
@@ -71,7 +74,7 @@ template <typename KeyT> class Tree
                                                 : grandparent->right;
         }
 
-        bool is_left_child() const { return parent->left == this; }
+        bool is_left_child() const { return parent->left.get() == this; }
 
         bool is_right_child() const { return !is_left_child(); }
 
@@ -81,20 +84,19 @@ template <typename KeyT> class Tree
                    (is_right_child() && parent->is_left_child());
         }
 
-        Node* get_bro() const
+        NodePtr get_bro() const
         {
             return is_left_child() ? parent->right : parent->left;
         }
     };
 
   	/* -----~ members ~----- */
-    Node* root_ = nullptr;
-    std::vector<Node* > data_;
+    NodePtr root_ = nullptr;
 
   	/* -----~ private member-functions ~----- */
-    void rotate_left(Node* node)
+    void rotate_left(NodePtr node)
     {
-        Node* pivot = node->right;
+        NodePtr pivot = node->right;
 
         pivot->parent = node->parent;
 
@@ -112,13 +114,13 @@ template <typename KeyT> class Tree
         if (pivot->left != nullptr)
             pivot->left->parent = node;
 
-        node->parent = pivot;
-        pivot->left = node;
+        node->parent = std::move(pivot);
+        node->parent->left = std::move(node);
     }
 
-    void rotate_right(Node* node)
+    void rotate_right(NodePtr node)
     {
-        Node* pivot = node->left;
+        NodePtr pivot = node->left;
 
         pivot->parent = node->parent;
         if (node->parent != nullptr)
@@ -135,20 +137,18 @@ template <typename KeyT> class Tree
         if (pivot->right != nullptr)
             pivot->right->parent = node;
 
-        node->parent = pivot;
-        pivot->right = node;
+        node->parent = std::move(pivot);
+        node->parent->right = std::move(node);
     }
 
-    void subtree_insert(Node* sub_root, const KeyT &value)
+    void subtree_insert(NodePtr sub_root, const KeyT &value)
     {
         if (value > sub_root->value)
         {
             if (sub_root->right == nullptr)
             {
-                Node* inserted_node = new Node(value, sub_root);
+                NodePtr inserted_node = std::make_shared<Node>(value, sub_root);
                 sub_root->right = inserted_node;
-
-                data_.emplace_back(inserted_node);
 
                 fix_violation(inserted_node);
 
@@ -161,10 +161,8 @@ template <typename KeyT> class Tree
         {
             if (sub_root->left == nullptr)
             {
-                Node* inserted_node = new Node(value, sub_root);
+                NodePtr inserted_node = std::make_shared<Node>(value, sub_root);
                 sub_root->left = inserted_node;
-
-                data_.emplace_back(inserted_node);
 
                 fix_violation(inserted_node);
 
@@ -177,10 +175,10 @@ template <typename KeyT> class Tree
         return;
     }
 
-    void handle_black_unc(Node* cur_node)
+    void handle_black_unc(NodePtr cur_node)
     {
-        Node* parent = cur_node->parent;
-        Node* grandparent = cur_node->get_grandp();
+        NodePtr parent = cur_node->parent;
+        NodePtr grandparent = cur_node->get_grandp();
 
         if (cur_node->is_left_child() && parent->is_right_child())
         {
@@ -205,19 +203,19 @@ template <typename KeyT> class Tree
         paint_red(grandparent);
     }
 
-    void fix_violation(Node* cur_node)
+    void fix_violation(NodePtr cur_node)
     {
         while (cur_node != root_ && cur_node->parent->is_red)
         {
-            Node* parent = cur_node->parent;
-            Node* uncle = cur_node->get_unc();
+            NodePtr parent = cur_node->parent;
+            NodePtr uncle = cur_node->get_unc();
 
             if (uncle && uncle->is_red)
             {
                 paint_black(parent);
                 paint_black(uncle);
 
-                Node* grandparent = cur_node->get_grandp();
+                NodePtr grandparent = cur_node->get_grandp();
 
                 paint_red(grandparent);
                 cur_node = grandparent;
@@ -231,34 +229,21 @@ template <typename KeyT> class Tree
         paint_black(root_);
     }
 
-    void paint_black(Node* node) const
+    void paint_black(NodePtr node) const
     {
         if (node != nullptr)
             node->is_red = false;
     }
 
-    void paint_red(Node* node) const { node->is_red = true; }
+    void paint_red(NodePtr node) const { node->is_red = true; }
 
-	    void free_data()
-    {
-        for (auto &elem : data_)
-        {
-            LOG("Deleting {}\n", elem->value);
-            delete elem;
-        }
-
-        root_ = nullptr;
-        data_.clear();
-    }
-
-    Node* create_based_on(const Node* reference, Node* parent)
+    NodePtr create_based_on(const NodePtr reference, NodePtr parent)
     {
         if (reference == nullptr)
             return nullptr;
 
         LOG("Copying {}\n", reference->value);
-        Node* created = new Node(reference->value, parent, reference->is_red);
-        data_.push_back(created);
+        NodePtr created = std::make_shared<Node>(reference->value, parent, reference->is_red);
 
         created->left = create_based_on(reference->left, created);
         created->right = create_based_on(reference->right, created);
@@ -267,17 +252,17 @@ template <typename KeyT> class Tree
     }
 
 	/* -----~ graphviz dump ~----- */
-    void dump_regular_nodes(Node* node, std::ostream &dump) const
+    void dump_regular_nodes(NodePtr node, std::ostream &dump) const
     {
         if (node == nullptr)
             return;
 
-        dump << "\t" << reinterpret_cast<size_t>(node)
+        dump << "\t" << reinterpret_cast<size_t>(node.get())
              << "[shape = Mrecord, fillcolor = \""
              << (node->is_red ? detail::html_colors::red_ : detail::html_colors::black_)
 			 << "\", label =  \"{" << node
-             << " | val: " << node->value << " | {L: " << node->left
-             << " R: " << node->right << "}}"
+             << " | val: " << node->value << " | {L: " << node->left.get()
+             << " R: " << node->right.get() << "}}"
              << "\" ];\n";
 
         dump_regular_nodes(node->left, dump);
@@ -285,30 +270,30 @@ template <typename KeyT> class Tree
         dump_regular_nodes(node->right, dump);
     }
 
-    void dump_connections(Node* node, std::ostream &dump) const
+    void dump_connections(NodePtr node, std::ostream &dump) const
     {
         if (node == nullptr)
             return;
 
         if (node->left != nullptr)
         {
-            dump << reinterpret_cast<size_t>(node) << " -> "
-                 << reinterpret_cast<size_t>(node->left) << '\n';
+            dump << reinterpret_cast<size_t>(node.get()) << " -> "
+                 << reinterpret_cast<size_t>(node->left.get()) << '\n';
 
             dump_connections(node->left, dump);
         }
 
         if (node->right != nullptr)
         {
-            dump << reinterpret_cast<size_t>(node) << " -> "
-                 << reinterpret_cast<size_t>(node->right) << '\n';
+            dump << reinterpret_cast<size_t>(node.get()) << " -> "
+                 << reinterpret_cast<size_t>(node->right.get()) << '\n';
 
             dump_connections(node->right, dump);
         }
     }
 
   public:
-    using iterator = Node* ;
+    using iterator = NodePtr;
 
     Tree() = default;
 
@@ -326,7 +311,7 @@ template <typename KeyT> class Tree
         if (this == &other)
             return *this;
 
-        free_data();
+        // free_data();
 
         root_ = create_based_on(other.root_, nullptr);
 
@@ -335,10 +320,10 @@ template <typename KeyT> class Tree
 
     Tree(Tree &&other) noexcept
         : root_(std::move(other.root_))
-        , data_(std::move(other.data_))
+        // , data_(std::move(other.data_))
     {
         MSG("Move constructor called\n");
-        other.data_.clear();
+        // other.data_.clear();
         other.root_ = nullptr;
     }
 
@@ -349,13 +334,13 @@ template <typename KeyT> class Tree
         if (this == &other)
             return *this;
 
-        free_data();
+        // free_data();
 
         root_ = std::move(other.root_);
-        data_ = std::move(other.data_);
+        // data_ = std::move(other.data_);
 
-        other.data_.clear();
-        other.root_ = nullptr;
+        // other.data_.clear();
+        // other.root_ = nullptr;
 
         return *this;
     }
@@ -366,8 +351,7 @@ template <typename KeyT> class Tree
 
         if (root_ == nullptr)
         {
-            root_ = new Node(value);
-            data_.push_back(root_);
+            root_ = std::make_shared<Node>(value);
             paint_black(root_);
         }
         else
@@ -412,7 +396,7 @@ template <typename KeyT> class Tree
     iterator lower_bound(const KeyT &key) const
     {
         iterator cur_node = root_;
-        iterator answer = nullptr;
+        iterator answer{};
 
         if (!cur_node)
             return nullptr;
@@ -471,13 +455,11 @@ template <typename KeyT> class Tree
     {
         size_t distance = 0;
 
-        if (!fst)
-            return 0;
-        if (snd && (snd->value < fst->value))
+        if (!fst || (snd && (snd->value < fst->value)))
             return 0;
 
-        Node* cur_node = fst;
-        Node* last_visited = fst->left;
+        NodePtr cur_node = fst;
+        NodePtr last_visited = fst->left;
 
         while (cur_node != nullptr)
         {
@@ -526,7 +508,7 @@ template <typename KeyT> class Tree
     {
         MSG("Destructor called\n");
 
-        free_data();
+        // free_data();
     }
 };
 
