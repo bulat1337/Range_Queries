@@ -164,7 +164,7 @@ template <typename KeyT> class Tree
             return *this;
         }
 
-        void swap(iterator &other) { std::swap(node_, other.node_); }
+        void swap(iterator &other) noexcept { std::swap(node_, other.node_); }
 
         KeyT &operator*() const { return node_->value; }
 
@@ -244,7 +244,7 @@ template <typename KeyT> class Tree
         }
     };
 
-    void swap(iterator &lhs, iterator &rhs) { lhs.swap(rhs); }
+    void swap(iterator &lhs, iterator &rhs) noexcept { lhs.swap(rhs); }
 
     iterator beign() { return iterator(sub_begin(root_)); }
     iterator end() { return iterator(nullptr); }
