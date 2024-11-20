@@ -26,7 +26,7 @@ static constexpr const char *black_ = "#1B1B1C";
 static constexpr const char *red_ = "#820007";
 }; // namespace html_colors
 
-}; // namespace detail
+}; // namespace detailf
 
 template <typename KeyT> class Tree
 {
@@ -34,6 +34,7 @@ template <typename KeyT> class Tree
     /* -----~ Usings ~----- */
     struct Node;
     using NodePtr = std::shared_ptr<Node>;
+    using NodeWPtr = std::weak_ptr<Node>;
 
     /* -----~ Node ~----- */
     struct Node
@@ -42,7 +43,7 @@ template <typename KeyT> class Tree
 
         NodePtr right{};
         NodePtr left{};
-        NodePtr parent{};
+        NodeWPtr parent{};
 
         bool is_red = true;
 
@@ -56,33 +57,36 @@ template <typename KeyT> class Tree
             , is_red(_is_red)
         {}
 
-        NodePtr get_grandp() const
+        NodeWPtr get_grandp() const
         {
-            if (parent != nullptr)
-                return parent->parent;
-
-            return nullptr;
+			return parent.lock() ? parent.lock()->parent : NodeWPtr{};
         }
 
         NodePtr get_unc() const
         {
-            NodePtr grandparent = get_grandp();
+            NodeWPtr grandparent = get_grandp();
 
-            if (grandparent == nullptr)
-                return nullptr;
+            if (grandparent.lock() == nullptr) return nullptr;
 
-            return grandparent->right == parent ? grandparent->left
-                                                : grandparent->right;
+            return 	  grandparent.lock()->right == parent.lock()
+					? grandparent.lock()->left
+                    : grandparent.lock()->right;
         }
 
-        bool is_left_child() const { return parent->left.get() == this; }
+        bool is_left_child() const
+        {
+            return parent.lock() && parent.lock()->left.get() == this;
+        }
 
-        bool is_right_child() const { return !is_left_child(); }
+        bool is_right_child() const
+        {
+            return parent.lock() && parent.lock()->right.get() == this;
+        }
 
         bool is_triangle() const
         {
-            return (is_left_child() && parent->is_right_child()) ||
-                   (is_right_child() && parent->is_left_child());
+            return (is_left_child() && parent.lock()->is_right_child()) ||
+                   (is_right_child() && parent.lock()->is_left_child());
         }
     };
 
@@ -107,15 +111,15 @@ template <typename KeyT> class Tree
         if (node->right)
             return sub_begin(node->right);
 
-        NodePtr parent = node->parent;
+        NodeWPtr parent = node->parent;
 
-        while (parent && node == parent->right)
+        while (parent.lock() && node == parent.lock()->right)
         {
-            node = parent;
-            parent = parent->parent;
+            node = parent.lock();
+            parent = parent.lock()->parent;
         }
 
-        return parent;
+        return parent.lock();
     }
 
     static NodePtr prev(NodePtr node)
@@ -123,14 +127,14 @@ template <typename KeyT> class Tree
         if (node->left)
             return sub_end(node->left);
 
-        NodePtr parent = node->parent;
+        NodeWPtr parent = node->parent;
         while (parent && node == parent->left)
         {
-            node = parent;
-            parent = parent->parent;
+            node = parent.lock();
+            parent = parent.lock()->parent;
         }
 
-        return parent;
+        return parent.lock();
     }
 
   public:
@@ -256,12 +260,12 @@ template <typename KeyT> class Tree
 
         pivot->parent = node->parent;
 
-        if (node->parent != nullptr)
+        if (!node->parent.expired())
         {
-            if (node->parent->left == node)
-                node->parent->left = pivot;
+            if (node->parent.lock()->left == node)
+                node->parent.lock()->left = pivot;
             else
-                node->parent->right = pivot;
+                node->parent.lock()->right = pivot;
         }
         else
             root_ = pivot;
@@ -270,8 +274,8 @@ template <typename KeyT> class Tree
         if (pivot->left != nullptr)
             pivot->left->parent = node;
 
-        node->parent = std::move(pivot);
-        node->parent->left = std::move(node);
+        node->parent = pivot;
+        node->parent.lock()->left = std::move(node);
     }
 
     void rotate_right(NodePtr node)
@@ -279,12 +283,12 @@ template <typename KeyT> class Tree
         NodePtr pivot = node->left;
 
         pivot->parent = node->parent;
-        if (node->parent != nullptr)
+        if (!node->parent.expired())
         {
-            if (node->parent->left == node)
-                node->parent->left = pivot;
+            if (node->parent.lock()->left == node)
+                node->parent.lock()->left = pivot;
             else
-                node->parent->right = pivot;
+                node->parent.lock()->right = pivot;
         }
         else
             root_ = pivot;
@@ -293,8 +297,8 @@ template <typename KeyT> class Tree
         if (pivot->right != nullptr)
             pivot->right->parent = node;
 
-        node->parent = std::move(pivot);
-        node->parent->right = std::move(node);
+        node->parent = pivot;
+        node->parent.lock()->right = std::move(node);
     }
 
     void subtree_insert(NodePtr sub_root, const KeyT &value)
@@ -333,17 +337,17 @@ template <typename KeyT> class Tree
 
     void handle_black_unc(NodePtr cur_node)
     {
-        NodePtr parent = cur_node->parent;
-        NodePtr grandparent = cur_node->get_grandp();
+        NodeWPtr parent = cur_node->parent;
+        NodeWPtr grandparent = cur_node->get_grandp();
 
-        if (cur_node->is_left_child() && parent->is_right_child())
+        if (cur_node->is_left_child() && parent.lock()->is_right_child())
         {
-            rotate_right(parent);
+            rotate_right(parent.lock());
             cur_node = cur_node->right;
         }
-        else if (cur_node->is_right_child() && parent->is_left_child())
+        else if (cur_node->is_right_child() && parent.lock()->is_left_child())
         {
-            rotate_left(parent);
+            rotate_left(parent.lock());
             cur_node = cur_node->left;
         }
 
@@ -351,30 +355,30 @@ template <typename KeyT> class Tree
         grandparent = cur_node->get_grandp();
 
         if (cur_node->is_left_child())
-            rotate_right(grandparent);
+            rotate_right(grandparent.lock());
         else
-            rotate_left(grandparent);
+            rotate_left(grandparent.lock());
 
-        paint_black(parent);
-        paint_red(grandparent);
+        paint_black(parent.lock());
+        paint_red(grandparent.lock());
     }
 
     void fix_violation(NodePtr cur_node)
     {
-        while (cur_node != root_ && cur_node->parent->is_red)
+        while (cur_node != root_ && cur_node->parent.lock()->is_red)
         {
-            NodePtr parent = cur_node->parent;
+            NodeWPtr parent = cur_node->parent;
             NodePtr uncle = cur_node->get_unc();
 
             if (uncle && uncle->is_red)
             {
-                paint_black(parent);
+                paint_black(parent.lock());
                 paint_black(uncle);
 
-                NodePtr grandparent = cur_node->get_grandp();
+                NodeWPtr grandparent = cur_node->get_grandp();
 
-                paint_red(grandparent);
-                cur_node = grandparent;
+                paint_red(grandparent.lock());
+                cur_node = grandparent.lock();
             }
             else
             {
@@ -392,21 +396,6 @@ template <typename KeyT> class Tree
     }
 
     void paint_red(NodePtr node) const { node->is_red = true; }
-
-    NodePtr create_based_on(const NodePtr reference, NodePtr parent)
-    {
-        if (reference == nullptr)
-            return nullptr;
-
-        LOG("Copying {}\n", reference->value);
-        NodePtr created =
-            std::make_shared<Node>(reference->value, parent, reference->is_red);
-
-        created->left = create_based_on(reference->left, created);
-        created->right = create_based_on(reference->right, created);
-
-        return created;
-    }
 
     /* -----~ graphviz dump ~----- */
     void dump_regular_nodes(NodePtr node, std::ostream &dump) const
@@ -451,87 +440,6 @@ template <typename KeyT> class Tree
     }
 
   public:
-    Tree() = default;
-
-    Tree(const Tree &other)
-    {
-        MSG("Copy constructor called\n");
-
-        if (!other.root_)
-            return;
-
-        struct NodeContext
-        {
-            NodePtr original;
-            NodePtr copy;
-        };
-
-        std::stack<NodeContext> stack;
-
-        root_ = std::make_shared<Node>(other.root_->value, nullptr,
-                                       other.root_->is_red);
-        stack.push({other.root_, root_});
-
-        while (!stack.empty())
-        {
-            NodeContext ctxt = stack.top();
-            stack.pop();
-
-            if (ctxt.original->left)
-            {
-                ctxt.copy->left = std::make_shared<Node>(
-                    ctxt.original->left->value, ctxt.copy,
-                    ctxt.original->left->is_red);
-
-                stack.push({ctxt.original->left, ctxt.copy->left});
-            }
-
-            if (ctxt.original->right)
-            {
-                ctxt.copy->right = std::make_shared<Node>(
-                    ctxt.original->right->value, ctxt.copy,
-                    ctxt.original->right->is_red);
-
-                stack.push({ctxt.original->right, ctxt.copy->right});
-            }
-        }
-    }
-
-    Tree &operator=(const Tree &other)
-    {
-        MSG("Copy assignment called\n");
-
-        if (this == &other)
-            return *this;
-
-        // free_data();
-
-        root_ = create_based_on(other.root_, nullptr);
-
-        return *this;
-    }
-
-    Tree(Tree &&other) noexcept
-        : root_(std::move(other.root_))
-    // , data_(std::move(other.data_))
-    {
-        MSG("Move constructor called\n");
-        // other.data_.clear();
-        other.root_ = nullptr;
-    }
-
-    Tree &operator=(Tree &&other) noexcept
-    {
-        MSG("Move assignment called\n");
-
-        if (this == &other)
-            return *this;
-
-        root_ = std::move(other.root_);
-
-        return *this;
-    }
-
     void insert(const KeyT &value)
     {
         LOG("Inserting {}\n", value);
