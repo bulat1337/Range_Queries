@@ -28,7 +28,8 @@ static constexpr const char *red_ = "#820007";
 
 }; // namespace detailf
 
-template <typename KeyT> class Tree
+template <typename KeyT, typename Compare = std::less<KeyT>>
+class Tree
 {
   private:
     /* -----~ Usings ~----- */
@@ -285,9 +286,11 @@ template <typename KeyT> class Tree
 
     void subtree_insert(Node* cur_node, const KeyT &value)
     {
+		Compare cmp;
+
 		while (cur_node)
 		{
-			if (value > cur_node->value)
+			if (cmp(cur_node->value, value))
 			{
 				if (cur_node->right == nullptr)
 				{
@@ -307,7 +310,7 @@ template <typename KeyT> class Tree
 				cur_node = cur_node->right;
 				continue;
 			}
-			else if (value < cur_node->value)
+			else if (cmp(value, cur_node->value))
 			{
 				if (cur_node->left == nullptr)
 				{
@@ -393,12 +396,6 @@ template <typename KeyT> class Tree
     }
 
     void paint_red(Node* node) const { node->is_red = true; }
-
-	void free_data()
-    {
-        data_.clear();
-        root_ = nullptr;
-    }
 
     /* -----~ graphviz dump ~----- */
     void dump_regular_nodes(Node* node, std::ostream &dump) const
@@ -498,12 +495,7 @@ template <typename KeyT> class Tree
 		}
 	}
 
-	Tree(Tree&& other) noexcept:
-		Tree()
-	{
-		MSG("Move constructor called\n");
-		swap(other);
-	}
+	Tree(Tree&& other) noexcept: Tree() { swap(other); }
 
 	Tree &operator=(const Tree& other)
 	{
@@ -521,8 +513,6 @@ template <typename KeyT> class Tree
 
 	Tree& operator=(Tree&& other) noexcept
 	{
-		MSG("Move assignment called\n");
-
 		if (this == &other)
 			return *this;
 
@@ -592,16 +582,18 @@ template <typename KeyT> class Tree
         if (!cur_node)
             return iterator{};
 
-        while (true)
+		Compare cmp;
+
+        while (cur_node)
         {
-            if (key < cur_node->value)
+            if (cmp(key, cur_node->value))
             {
                 answer = cur_node;
                 if (cur_node->left == nullptr)
                     return iterator(answer);
                 cur_node = cur_node->left;
             }
-            else if (key > cur_node->value)
+            else if (cmp(cur_node->value, key))
             {
                 if (cur_node->right == nullptr)
                     return iterator(answer);
@@ -622,16 +614,18 @@ template <typename KeyT> class Tree
         if (!cur_node)
             return iterator{};
 
-        while (true)
+		Compare cmp;
+
+        while (cur_node)
         {
-            if (key < cur_node->value)
+            if (cmp(key, cur_node->value))
             {
                 answer = cur_node;
                 if (cur_node->left == nullptr)
                     return iterator(answer);
                 cur_node = cur_node->left;
             }
-            else if (key >= cur_node->value)
+            else
             {
                 if (cur_node->right == nullptr)
                     return iterator(answer);
@@ -648,13 +642,6 @@ template <typename KeyT> class Tree
 
 		swap(root_, other.root_);
 		swap(data_, other.data_);
-	}
-
-	~Tree()
-	{
-		MSG("Destructor called\n");
-
-		free_data();
 	}
 };
 
