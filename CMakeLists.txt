@@ -7,9 +7,6 @@ enable_testing()
 option(ENABLE_LOGGING "Enable logging" OFF)
 set(ENABLE_LOGGING ${ENABLE_LOGGING} CACHE BOOL "Enable logging" FORCE)
 
-option(DUMP_TREE "Enable tree dump" OFF)
-set(DUMP_TREE ${DUMP_TREE} CACHE BOOL "Enable tree dump" FORCE)
-
 option(ENABLE_BD_TESTS "Enables big data tests" OFF)
 set(ENABLE_BD_TESTS ${ENABLE_BD_TESTS} CACHE BOOL "Enables big data tests" FORCE)
 

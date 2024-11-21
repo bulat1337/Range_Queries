@@ -148,9 +148,9 @@ template <typename KeyT> class Tree
         using difference_type = std::ptrdiff_t;
         using reference = KeyT&;
         using iterator_category = std::bidirectional_iterator_tag;
+        using pointer = Node*;
 
 	  private:
-        using pointer = Node*;
         pointer node_;
 
       public:
@@ -168,8 +168,6 @@ template <typename KeyT> class Tree
             node_ = other.node_;
             return *this;
         }
-
-        void swap(iterator &other) noexcept { std::swap(node_, other.node_); }
 
         KeyT &operator*() const { return node_->value; }
 
@@ -222,34 +220,16 @@ template <typename KeyT> class Tree
         bool operator==(const iterator &other) const
         {
             MSG("operator== called\n");
-            return node_ == other.node_;
-        }
 
-        bool operator==(const std::nullptr_t &other) const
-        {
-            MSG("operator== for nullptr called\n");
-            return node_ == other;
+            return node_ == other.node_;
         }
 
         bool operator!=(const iterator &other) const
         {
-            if (this->node_ && other.node_)
-                LOG("operator!= called for {} and {}\n", this->node_->value,
-                    other.node_->value);
-            else
-                MSG("operator!= called for null iterator\n");
-
-            return node_ != other.node_;
-        }
-
-        bool operator!=(const std::nullptr_t &other) const
-        {
-            MSG("operator== for nullptr called\n");
-            return node_ != other;
+			MSG("operator!= called\n");
+            return !(*this == other);
         }
     };
-
-    void swap(iterator &lhs, iterator &rhs) noexcept { lhs.swap(rhs); }
 
     iterator beign() { return iterator(sub_begin(root_)); }
     iterator end() { return iterator(nullptr); }
@@ -303,48 +283,53 @@ template <typename KeyT> class Tree
         node->parent->right = node;
     }
 
-    void subtree_insert(Node* sub_root, const KeyT &value)
+    void subtree_insert(Node* cur_node, const KeyT &value)
     {
-        if (value > sub_root->value)
-        {
-            if (sub_root->right == nullptr)
-            {
-				auto inserted_node = std::make_unique<Node>(value, sub_root);
+		while (cur_node)
+		{
+			if (value > cur_node->value)
+			{
+				if (cur_node->right == nullptr)
+				{
+					auto inserted_node = std::make_unique<Node>(value, cur_node);
 
-				Node* inserted_raw = inserted_node.get();
+					Node* inserted_raw = inserted_node.get();
 
-                sub_root->right = inserted_raw;
+					cur_node->right = inserted_raw;
 
-				data_.push_back(std::move(inserted_node));
+					data_.push_back(std::move(inserted_node));
 
-                fix_violation(inserted_raw);
+					fix_violation(inserted_raw);
 
-                return;
-            }
+					return;
+				}
 
-            subtree_insert(sub_root->right, value);
-        }
-        else if (value < sub_root->value)
-        {
-            if (sub_root->left == nullptr)
-            {
-                auto inserted_node = std::make_unique<Node>(value, sub_root);
+				cur_node = cur_node->right;
+				continue;
+			}
+			else if (value < cur_node->value)
+			{
+				if (cur_node->left == nullptr)
+				{
+					auto inserted_node = std::make_unique<Node>(value, cur_node);
 
-				Node* inserted_raw = inserted_node.get();
+					Node* inserted_raw = inserted_node.get();
 
-				data_.push_back(std::move(inserted_node));
+					data_.push_back(std::move(inserted_node));
 
-                sub_root->left = inserted_raw;
+					cur_node->left = inserted_raw;
 
-                fix_violation(inserted_raw);
+					fix_violation(inserted_raw);
 
-                return;
-            }
+					return;
+				}
 
-            subtree_insert(sub_root->left, value);
-        }
+				cur_node = cur_node->left;
+				continue;
+			}
 
-        return;
+			return;
+		}
     }
 
     void handle_black_unc(Node* cur_node)

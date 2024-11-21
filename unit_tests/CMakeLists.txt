@@ -113,9 +113,5 @@ if(ENABLE_LOGGING)
     target_compile_definitions(unit_tests PRIVATE ENABLE_LOGGING)
 endif()
 
-if(DUMP_TREE)
-    target_compile_definitions(unit_tests PRIVATE DUMP_TREE)
-endif()
-
 enable_testing()
 add_test(NAME UnitTests COMMAND unit_tests)
