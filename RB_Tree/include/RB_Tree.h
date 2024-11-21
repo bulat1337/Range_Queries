@@ -513,43 +513,37 @@ template <typename KeyT> class Tree
 		}
 	}
 
-	Tree &operator=(const Tree &other)
+	Tree(Tree&& other) noexcept:
+		Tree()
+	{
+		MSG("Move constructor called\n");
+		swap(other);
+	}
+
+	Tree &operator=(const Tree& other)
 	{
 		MSG("Copy assignment called\n");
 
 		if (this == &other)
 			return *this;
 
-		Tree tree_copy(other);
+		Tree copied_tree(other);
 
-		swap(tree_copy);
+		swap(copied_tree);
 
 		return *this;
 	}
 
-	Tree(Tree &&other) noexcept
-		: root_(std::move(other.root_))
-		, data_(std::move(other.data_))
-	{
-		MSG("Move constructor called\n");
-		other.data_.clear();
-		other.root_ = nullptr;
-	}
-
-	Tree &operator=(Tree &&other) noexcept
+	Tree& operator=(Tree&& other) noexcept
 	{
 		MSG("Move assignment called\n");
 
 		if (this == &other)
 			return *this;
 
-		free_data();
+		Tree moved_tree(std::move(other));
 
-		root_ = std::move(other.root_);
-		data_ = std::move(other.data_);
-
-		other.data_.clear();
-		other.root_ = nullptr;
+		swap(moved_tree);
 
 		return *this;
 	}

@@ -75,11 +75,6 @@ TEST_F(RBTreeTest, DistanceTest)
 
     EXPECT_EQ(std::distance(it1, it1), 0);
     MSG("OK\n");
-
-    // it1 = tree.lower_bound(12);
-    // it2 = tree.lower_bound(5);
-    // EXPECT_EQ(std::distance(it1, it2), 0);
-    // MSG("OK\n");
 }
 
 TEST_F(RBTreeTest, CopyConstructorTest)
@@ -100,6 +95,7 @@ TEST_F(RBTreeTest, MoveConstructorTest)
     EXPECT_EQ(*it, 10);
 
     EXPECT_EQ(tree.lower_bound(10), nullptr);
+    EXPECT_EQ(*moved_tree.lower_bound(10), 10);
 }
 
 TEST_F(RBTreeTest, CopyAssignmentTest)
@@ -122,6 +118,7 @@ TEST_F(RBTreeTest, MoveAssignmentTest)
     EXPECT_EQ(*it, 10);
 
     EXPECT_EQ(tree.lower_bound(10), nullptr);
+    EXPECT_EQ(*moved_tree.lower_bound(10), 10);
 }
 
 TEST_F(RBTreeTest, copy_ctor)
