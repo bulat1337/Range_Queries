@@ -3,6 +3,7 @@
 #include <exception> // for exception
 #include <iostream>  // for char_traits, basic_ostream, basic_ios, oper...
 
+#include <vector>
 int main(int argc, char **argv)
 {
     try
