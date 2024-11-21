@@ -146,12 +146,14 @@ template <typename KeyT> class Tree
       public:
         using value_type = KeyT;
         using difference_type = std::ptrdiff_t;
-        using reference = KeyT &;
-        using pointer = Node*;
+        using reference = KeyT&;
         using iterator_category = std::bidirectional_iterator_tag;
 
-      public:
+	  private:
+        using pointer = Node*;
         pointer node_;
+
+      public:
 
         iterator(pointer node = nullptr)
             : node_(node)
