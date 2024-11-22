@@ -26,7 +26,7 @@ static constexpr const char *black_ = "#1B1B1C";
 static constexpr const char *red_ = "#820007";
 }; // namespace html_colors
 
-}; // namespace detailf
+}; // namespace detail
 
 template <typename KeyT, typename Compare = std::less<KeyT>>
 class Tree
@@ -93,6 +93,7 @@ class Tree
 	/* -----~ members ~----- */
     Node* root_ = nullptr;
 	std::vector<NodePtr> data_;
+	Compare cmp_;
 
     /* -----~ Iterator ~----- */
 
@@ -286,11 +287,9 @@ class Tree
 
     void subtree_insert(Node* cur_node, const KeyT &value)
     {
-		Compare cmp;
-
 		while (cur_node)
 		{
-			if (cmp(cur_node->value, value))
+			if (cmp_(cur_node->value, value))
 			{
 				if (cur_node->right == nullptr)
 				{
@@ -310,7 +309,7 @@ class Tree
 				cur_node = cur_node->right;
 				continue;
 			}
-			else if (cmp(value, cur_node->value))
+			else if (cmp_(value, cur_node->value))
 			{
 				if (cur_node->left == nullptr)
 				{
@@ -582,18 +581,16 @@ class Tree
         if (!cur_node)
             return iterator{};
 
-		Compare cmp;
-
         while (cur_node)
         {
-            if (cmp(key, cur_node->value))
+            if (cmp_(key, cur_node->value))
             {
                 answer = cur_node;
                 if (cur_node->left == nullptr)
                     return iterator(answer);
                 cur_node = cur_node->left;
             }
-            else if (cmp(cur_node->value, key))
+            else if (cmp_(cur_node->value, key))
             {
                 if (cur_node->right == nullptr)
                     return iterator(answer);
@@ -614,11 +611,9 @@ class Tree
         if (!cur_node)
             return iterator{};
 
-		Compare cmp;
-
         while (cur_node)
         {
-            if (cmp(key, cur_node->value))
+            if (cmp_(key, cur_node->value))
             {
                 answer = cur_node;
                 if (cur_node->left == nullptr)
@@ -644,9 +639,6 @@ class Tree
 		swap(data_, other.data_);
 	}
 };
-
-template <typename T>
-void swap(Tree<T>& lhs, Tree<T>& rhs) noexcept { rhs.swap(lhs); }
 
 }; // namespace RB
 
